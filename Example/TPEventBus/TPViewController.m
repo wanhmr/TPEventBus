@@ -21,6 +21,7 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:) object:self queue:nil];
+    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:)];
 }
 
 - (void)didReceiveMemoryWarning

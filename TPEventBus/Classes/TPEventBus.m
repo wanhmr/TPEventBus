@@ -51,7 +51,7 @@
 @property (nonatomic, strong) NSString *eventType;
 @property (nonatomic, weak) id observer;
 @property (nonatomic, strong) NSString *selector;
-@property (nonatomic, strong) id object;
+@property (nonatomic, weak) id object;
 @property (nonatomic, strong) NSOperationQueue *queue;
 
 /**
@@ -59,6 +59,7 @@
  因此我们需要保存 observer 的 snapshot 也就是 observerID。
  */
 @property (nonatomic, strong) NSString *observerID;
+@property (nonatomic, strong) NSString *objectID;
 
 @end
 
@@ -69,7 +70,7 @@
     [self.eventType hash] ^
     [self.observerID hash] ^
     [self.selector hash] ^
-    [self.object hash] ^
+    [self.objectID hash] ^
     [self.queue hash];
 }
 
@@ -86,7 +87,7 @@
     (self.eventType == other.eventType || [self.eventType isEqual:other.eventType]) &&
     (self.observerID == other.observerID || [self.observerID isEqual:other.observerID]) &&
     (self.selector == other.selector || [self.selector isEqual:other.selector]) &&
-    (self.object == other.object || [self.object isEqual:other.object]) &&
+    (self.objectID == other.objectID || [self.objectID isEqual:other.objectID]) &&
     (self.queue == other.queue || [self.queue isEqual:other.queue]);
 }
 
@@ -131,6 +132,7 @@
     NSParameterAssert(eventType);
     NSParameterAssert(observer);
     NSParameterAssert(selector);
+    NSParameterAssert([eventType conformsToProtocol:@protocol(TPEvent)]);
     
     TPEventBusObservingContext *observingContext = [TPEventBusObservingContext new];
     observingContext.eventType = NSStringFromClass(eventType);
@@ -139,6 +141,9 @@
     observingContext.object = object;
     observingContext.queue = queue;
     observingContext.observerID = @((NSUInteger)observer).stringValue;
+    if (object) {
+        observingContext.objectID = @((NSUInteger)object).stringValue;
+    }
     [self safeAddObservingContext:observingContext forEventType:eventType];
 }
 
