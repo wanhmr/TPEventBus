@@ -1,0 +1,16 @@
+PODS:
+  - TPEventBus (0.1.0)
+
+DEPENDENCIES:
+  - TPEventBus (from `../`)
+
+EXTERNAL SOURCES:
+  TPEventBus:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  TPEventBus: 88973b644ac3cc13d018185cfb9c50144eb683e8
+
+PODFILE CHECKSUM: 07db81f034e508b4d8837e46cd8c381cb0cba171
+
+COCOAPODS: 1.5.3

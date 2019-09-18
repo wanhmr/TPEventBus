@@ -1,0 +1,13 @@
+use_frameworks!
+
+platform :ios, '8.0'
+
+target 'TPEventBus_Example' do
+  pod 'TPEventBus', :path => '../'
+
+  target 'TPEventBus_Tests' do
+    inherit! :search_paths
+
+    
+  end
+end
