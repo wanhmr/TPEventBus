@@ -9,7 +9,7 @@
 #import "TPEventBus.h"
 #import <objc/runtime.h>
 
-@implementation TPEventBusUnregisterBag
+@implementation TPEventBusUnregisterablewBag
 
 - (void)dealloc {
     [[_unregisterables objectEnumerator].allObjects enumerateObjectsUsingBlock:^(id<TPEventBusUnregisterable> obj, NSUInteger idx, BOOL *stop) {
@@ -35,10 +35,10 @@
 
 @implementation NSObject (TPEventBus)
 
-- (TPEventBusUnregisterBag *)eventBusUnregisterBag {
-    TPEventBusUnregisterBag *bag = objc_getAssociatedObject(self, _cmd);
+- (TPEventBusUnregisterablewBag *)eventBusUnregisterableBag {
+    TPEventBusUnregisterablewBag *bag = objc_getAssociatedObject(self, _cmd);
     if (!bag) {
-        bag = [[TPEventBusUnregisterBag alloc] init];
+        bag = [[TPEventBusUnregisterablewBag alloc] init];
         objc_setAssociatedObject(self, _cmd, bag, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return bag;
@@ -152,7 +152,7 @@
 }
 
 - (void)unregisterEventType:(Class)eventType observer:(id)observer object:(id)object {
-    NSArray<TPEventBusObservingContext *> *observingContexts = [observer eventBusUnregisterBag].unregisterables.allObjects;
+    NSArray<TPEventBusObservingContext *> *observingContexts = [observer eventBusUnregisterableBag].unregisterables.allObjects;
     NSString *et = NSStringFromClass(eventType);
     [observingContexts enumerateObjectsUsingBlock:^(TPEventBusObservingContext * _Nonnull observingContext, NSUInteger idx, BOOL * _Nonnull stop) {
         if ([observingContext.eventType isEqualToString:et]) {
@@ -172,7 +172,7 @@
 }
 
 - (void)unregisterObserver:(id)observer {
-    NSArray<TPEventBusObservingContext *> *observingContexts = [observer eventBusUnregisterBag].unregisterables.allObjects;
+    NSArray<TPEventBusObservingContext *> *observingContexts = [observer eventBusUnregisterableBag].unregisterables.allObjects;
     [observingContexts enumerateObjectsUsingBlock:^(TPEventBusObservingContext * _Nonnull observingContext, NSUInteger idx, BOOL * _Nonnull stop) {
         [observingContext unregister];
     }];
@@ -243,7 +243,7 @@
     dispatch_barrier_async(self.dispatchQueue, ^{
         NSHashTable *ht = [self hashTableFromEventType:eventType];
         if (![ht containsObject:observingContext]) {
-            [[observingContext.observer eventBusUnregisterBag] addUnregisterable:observingContext];
+            [[observingContext.observer eventBusUnregisterableBag] addUnregisterable:observingContext];
             [ht addObject:observingContext];
         }
     });

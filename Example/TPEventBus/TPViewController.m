@@ -9,6 +9,7 @@
 #import "TPViewController.h"
 #import <TPEventBus/TPEventBus.h>
 #import "TPTestEvent.h"
+#import "TPMediaLikedChangedEvent.h"
 
 @interface TPViewController ()
 
@@ -20,26 +21,12 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:) object:self queue:nil];
-    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:)];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 - (IBAction)testAction:(id)sender {
-    TPTestEvent *event = [TPTestEvent new];
-    event.name = @"tpphha";
-    [[TPEventBus sharedBus] postEvent:event object:self];
-}
-
-#pragma mark - Event Bus
-
-- (void)onTestEvent:(TPTestEvent *)event object:(id)object {
-    NSLog(@"event name: %@, object: %@", event.name, object);
+    TPMediaLikedChangedEvent *event = [[TPMediaLikedChangedEvent alloc] initWithLiked:@(YES)];
+//    [[TPEventBus sharedBus] postEvent:event object:self];
+    [[TPEventBus sharedBus] postEvent:event];
 }
 
 @end

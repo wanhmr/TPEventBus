@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface TPEventBusUnregisterBag : NSObject
+@interface TPEventBusUnregisterablewBag : NSObject
 
 @property (nonatomic, strong, readonly) NSHashTable *unregisterables;
 
@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSObject (TPEventBus)
 
-@property (nonatomic, strong, readonly) TPEventBusUnregisterBag *eventBusUnregisterBag;
+@property (nonatomic, strong, readonly) TPEventBusUnregisterablewBag *eventBusUnregisterableBag;
 
 @end
 
