@@ -46,24 +46,44 @@
 
 @end
 
-@interface TPEventBusObservingContext ()
+@interface TPEventBusToken ()
 
-@property (nonatomic, strong) NSString *eventType;
-@property (nonatomic, weak) id observer;
-@property (nonatomic, strong) NSString *selector;
-@property (nonatomic, weak) id object;
-@property (nonatomic, strong) NSOperationQueue *queue;
+@property (nonatomic, strong, readonly) NSString *eventType;
+@property (nonatomic, weak, readonly) id observer;
+@property (nonatomic, strong, readonly) NSString *selector;
+@property (nullable, nonatomic, weak, readonly) id object;
+@property (nullable, nonatomic, strong, readonly) NSOperationQueue *queue;
 
 /**
  这个是关键，因为 observer 是弱引用，observer 清除 AssociatedObject 的时候，已经是 nil，从而导致 TPEventBusObservingContext 的 hash 值改变。
  因此我们需要保存 observer 的 snapshot 也就是 observerID。
  */
-@property (nonatomic, strong) NSString *observerID;
-@property (nonatomic, strong) NSString *objectID;
+@property (nonatomic, strong, readonly) NSString *observerID;
+@property (nonatomic, strong, readonly) NSString *objectID;
 
 @end
 
-@implementation TPEventBusObservingContext
+@implementation TPEventBusToken
+
+- (instancetype)initWithEventType:(Class)eventType
+                         observer:(id)observer
+                         selector:(SEL)selector
+                           object:(id)object
+                            queue:(NSOperationQueue *)queue {
+    self = [super init];
+    if (self) {
+        _eventType = NSStringFromClass(eventType);
+        _observer = observer;
+        _selector = NSStringFromSelector(selector);
+        _object = object;
+        _queue = queue;
+        _observerID = @((NSUInteger)observer).stringValue;
+        if (object) {
+            _objectID = @((NSUInteger)object).stringValue;
+        }
+    }
+    return self;
+}
 
 - (NSUInteger)hash {
     return
@@ -74,12 +94,12 @@
     [self.queue hash];
 }
 
-- (BOOL)isEqual:(TPEventBusObservingContext *)other {
+- (BOOL)isEqual:(TPEventBusToken *)other {
     if (self == other) {
         return YES;
     }
     
-    if (![other isKindOfClass:TPEventBusObservingContext.class]) {
+    if (![other isKindOfClass:TPEventBusToken.class]) {
         return NO;
     }
     
@@ -92,7 +112,7 @@
 }
 
 - (void)unregister {
-    [[TPEventBus sharedBus] unregisterEventType:NSClassFromString(self.eventType) observingContext:self];
+    [[TPEventBus sharedBus] unregisterEventType:NSClassFromString(self.eventType) token:self];
 }
 
 @end
@@ -100,7 +120,7 @@
 @interface TPEventBus ()
 
 @property (nonatomic, strong, readonly) dispatch_queue_t  dispatchQueue;
-@property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSHashTable *> *observingContexts;
+@property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSMutableSet *> *tokens;
 
 @end
 
@@ -110,7 +130,7 @@
     self = [super init];
     if (self) {
         _dispatchQueue = dispatch_queue_create("com.eventbus.dispatch.queue", DISPATCH_QUEUE_CONCURRENT);
-        _observingContexts = [NSMutableDictionary new];
+        _tokens = [NSMutableDictionary new];
     }
     return self;
 }
@@ -134,17 +154,13 @@
     NSParameterAssert(selector);
     NSParameterAssert([eventType conformsToProtocol:@protocol(TPEvent)]);
     
-    TPEventBusObservingContext *observingContext = [TPEventBusObservingContext new];
-    observingContext.eventType = NSStringFromClass(eventType);
-    observingContext.observer = observer;
-    observingContext.selector = NSStringFromSelector(selector);
-    observingContext.object = object;
-    observingContext.queue = queue;
-    observingContext.observerID = @((NSUInteger)observer).stringValue;
-    if (object) {
-        observingContext.objectID = @((NSUInteger)object).stringValue;
-    }
-    [self safeAddObservingContext:observingContext forEventType:eventType];
+    TPEventBusToken *token =
+    [[TPEventBusToken alloc] initWithEventType:eventType
+                                      observer:observer
+                                      selector:selector
+                                        object:object
+                                         queue:queue];
+    [self safeAddToken:token forEventType:eventType];
 }
 
 - (void)registerEventType:(Class)eventType observer:(id)observer selector:(SEL)selector {
@@ -152,16 +168,16 @@
 }
 
 - (void)unregisterEventType:(Class)eventType observer:(id)observer object:(id)object {
-    NSArray<TPEventBusObservingContext *> *observingContexts = [observer eventBusUnregisterableBag].unregisterables.allObjects;
+    NSArray<TPEventBusToken *> *tokens = [observer eventBusUnregisterableBag].unregisterables.allObjects;
     NSString *et = NSStringFromClass(eventType);
-    [observingContexts enumerateObjectsUsingBlock:^(TPEventBusObservingContext * _Nonnull observingContext, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([observingContext.eventType isEqualToString:et]) {
+    [tokens enumerateObjectsUsingBlock:^(TPEventBusToken * _Nonnull token, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([token.eventType isEqualToString:et]) {
             if (object) {
-                if (observingContext.object == object) {
-                    [observingContext unregister];
+                if (token.object == object) {
+                    [token unregister];
                 }
             } else {
-                [observingContext unregister];
+                [token unregister];
             }
         }
     }];
@@ -172,24 +188,24 @@
 }
 
 - (void)unregisterObserver:(id)observer {
-    NSArray<TPEventBusObservingContext *> *observingContexts = [observer eventBusUnregisterableBag].unregisterables.allObjects;
-    [observingContexts enumerateObjectsUsingBlock:^(TPEventBusObservingContext * _Nonnull observingContext, NSUInteger idx, BOOL * _Nonnull stop) {
-        [observingContext unregister];
+    NSArray<TPEventBusToken *> *tokens = [observer eventBusUnregisterableBag].unregisterables.allObjects;
+    [tokens enumerateObjectsUsingBlock:^(TPEventBusToken * _Nonnull token, NSUInteger idx, BOOL * _Nonnull stop) {
+        [token unregister];
     }];
 }
 
-- (void)unregisterEventType:(Class)eventType observingContext:(TPEventBusObservingContext *)observingContext {
-    [self safeRemoveObservingContext:observingContext forEventType:eventType];
+- (void)unregisterEventType:(Class)eventType token:(TPEventBusToken *)token {
+    [self safeRemoveToken:token forEventType:eventType];
 }
 
 - (void)postEvent:(id<TPEvent>)event object:(id)object {
-    NSArray<TPEventBusObservingContext *> *observingContexts = [self safeObservingContextsForEventType:event.class];
-    [observingContexts enumerateObjectsUsingBlock:^(TPEventBusObservingContext * _Nonnull observingContext, NSUInteger idx, BOOL * _Nonnull stop) {
-        id observer = observingContext.observer;
-        NSString *selector = observingContext.selector;
-        NSOperationQueue *queue = observingContext.queue;
-        if (observingContext.object) {
-            if (observingContext.object == object) {
+    NSArray<TPEventBusToken *> *tokens = [self safeTokensForEventType:event.class];
+    [tokens enumerateObjectsUsingBlock:^(TPEventBusToken * _Nonnull token, NSUInteger idx, BOOL * _Nonnull stop) {
+        id observer = token.observer;
+        NSString *selector = token.selector;
+        NSOperationQueue *queue = token.queue;
+        if (token.object) {
+            if (token.object == object) {
                 [self postEvent:event object:object forObserver:observer selector:selector queue:queue];
             }
         } else {
@@ -229,55 +245,55 @@
     return NSStringFromClass(eventType);
 }
 
-- (NSHashTable *)hashTableFromEventType:(Class)eventType {
+- (NSMutableSet *)hashTableFromEventType:(Class)eventType {
     NSString *key = [self keyFromEventType:eventType];
-    NSHashTable *ht = self.observingContexts[key];
+    NSMutableSet *ht = self.tokens[key];
     if (!ht) {
-        ht = [[NSHashTable alloc] initWithOptions:NSPointerFunctionsObjectPersonality capacity:1];
-        self.observingContexts[key] = ht;
+        ht = [[NSMutableSet alloc] initWithCapacity:1];
+        self.tokens[key] = ht;
     }
     return ht;
 }
 
-- (void)safeAddObservingContext:(TPEventBusObservingContext *)observingContext forEventType:(Class)eventType {
+- (void)safeAddToken:(TPEventBusToken *)token forEventType:(Class)eventType {
     dispatch_barrier_async(self.dispatchQueue, ^{
-        NSHashTable *ht = [self hashTableFromEventType:eventType];
-        if (![ht containsObject:observingContext]) {
-            [[observingContext.observer eventBusUnregisterableBag] addUnregisterable:observingContext];
-            [ht addObject:observingContext];
+        NSMutableSet *ht = [self hashTableFromEventType:eventType];
+        if (![ht containsObject:token]) {
+            [[token.observer eventBusUnregisterableBag] addUnregisterable:token];
+            [ht addObject:token];
         }
     });
 }
 
-- (void)safeRemoveObservingContext:(TPEventBusObservingContext *)observingContext forEventType:(Class)eventType {
+- (void)safeRemoveToken:(TPEventBusToken *)token forEventType:(Class)eventType {
     dispatch_barrier_async(self.dispatchQueue, ^{
-        NSHashTable *ht = [self hashTableFromEventType:eventType];
-        if ([ht containsObject:observingContext]) {
-            [ht removeObject:observingContext];
+        NSMutableSet *ht = [self hashTableFromEventType:eventType];
+        if ([ht containsObject:token]) {
+            [ht removeObject:token];
             if (ht.count == 0) {
-                [self safeObservingContextsForEventType:eventType];
+                [self safeTokensForEventType:eventType];
             }
         }
     });
 }
 
-- (void)safeRemoveObservingContextsForEventType:(Class)eventType {
+- (void)safeRemoveTokensForEventType:(Class)eventType {
     dispatch_barrier_async(self.dispatchQueue, ^{
-        [self removeObservingContextsForEventType:eventType];
+        [self removeTokensForEventType:eventType];
     });
 }
 
-- (NSArray *)safeObservingContextsForEventType:(Class)eventType {
-    __block NSArray *observingContexts = nil;
+- (NSArray *)safeTokensForEventType:(Class)eventType {
+    __block NSArray *tokens = nil;
     dispatch_sync(self.dispatchQueue, ^{
-        observingContexts = [[self hashTableFromEventType:eventType] allObjects];
+        tokens = [[self hashTableFromEventType:eventType] allObjects];
     });
-    return observingContexts;
+    return tokens;
 }
 
-- (void)removeObservingContextsForEventType:(Class)eventType {
+- (void)removeTokensForEventType:(Class)eventType {
     NSString *key = [self keyFromEventType:eventType];
-    self.observingContexts[key] = nil;
+    self.tokens[key] = nil;
 }
 
 

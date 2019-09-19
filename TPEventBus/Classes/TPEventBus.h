@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface TPEventBusObservingContext : NSObject <TPEventBusUnregisterable>
+@interface TPEventBusToken : NSObject <TPEventBusUnregisterable>
 
 @end
 
@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)unregisterObserver:(id)observer;
 
-- (void)unregisterEventType:(Class)eventType observingContext:(TPEventBusObservingContext *)observingContext;
+- (void)unregisterEventType:(Class)eventType token:(TPEventBusToken *)token;
 
 - (void)postEvent:(id<TPEvent>)event object:(nullable id)object;
 
