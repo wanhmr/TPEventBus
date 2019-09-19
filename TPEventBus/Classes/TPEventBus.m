@@ -155,10 +155,9 @@
                  selector:(SEL)selector
                    object:(id)object
                     queue:(NSOperationQueue *)queue {
-    NSParameterAssert(eventType);
+    NSParameterAssert([eventType conformsToProtocol:@protocol(TPEvent)]);
     NSParameterAssert(observer);
     NSParameterAssert(selector);
-    NSParameterAssert([eventType conformsToProtocol:@protocol(TPEvent)]);
     
     TPEventBusToken *token =
     [[TPEventBusToken alloc] initWithEventType:eventType
