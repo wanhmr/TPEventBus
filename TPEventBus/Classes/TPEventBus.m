@@ -9,10 +9,16 @@
 #import "TPEventBus.h"
 #import <objc/runtime.h>
 
+@interface TPEventBusUnregisterableBag () {
+    NSHashTable *_unregisterables;
+}
+
+@end
+
 @implementation TPEventBusUnregisterableBag
 
 - (void)dealloc {
-    [[_unregisterables objectEnumerator].allObjects enumerateObjectsUsingBlock:^(id<TPEventBusUnregisterable> obj, NSUInteger idx, BOOL *stop) {
+    [_unregisterables.allObjects enumerateObjectsUsingBlock:^(id<TPEventBusUnregisterable> obj, NSUInteger idx, BOOL *stop) {
         [obj unregister];
     }];
     [_unregisterables removeAllObjects];
@@ -27,8 +33,12 @@
     return self;
 }
 
+- (NSArray<id<TPEventBusUnregisterable>> *)allUnregisterables {
+    return _unregisterables.allObjects;
+}
+
 - (void)addUnregisterable:(id<TPEventBusUnregisterable>)unregisterable {
-    [self.unregisterables addObject:unregisterable];
+    [_unregisterables addObject:unregisterable];
 }
 
 @end
@@ -46,6 +56,12 @@
 
 @end
 
+@protocol TPEventBusTokenDelegate <NSObject>
+
+- (void)eventBusTokenWantUnregister:(TPEventBusToken *)token;
+
+@end
+
 @interface TPEventBusToken ()
 
 @property (nonatomic, strong, readonly) Class eventType;
@@ -53,6 +69,8 @@
 @property (nonatomic, assign, readonly) SEL selector;
 @property (nullable, nonatomic, weak, readonly) id object;
 @property (nullable, nonatomic, strong, readonly) NSOperationQueue *queue;
+
+@property (nonatomic, weak) id<TPEventBusTokenDelegate> delegate;
 
 #pragma mark - Hash
 @property (nonatomic, strong, readonly) NSString *eventTypeID;
@@ -72,7 +90,8 @@
                          observer:(id)observer
                          selector:(SEL)selector
                            object:(id)object
-                            queue:(NSOperationQueue *)queue {
+                            queue:(NSOperationQueue *)queue
+                         delegate:(id<TPEventBusTokenDelegate>)delegate {
     self = [super init];
     if (self) {
         _eventType = eventType;
@@ -80,6 +99,7 @@
         _selector = selector;
         _object = object;
         _queue = queue;
+        _delegate = delegate;
         
         _eventTypeID = NSStringFromClass(eventType);
         _observerID = @((NSUInteger)observer).stringValue;
@@ -118,14 +138,14 @@
 }
 
 - (void)unregister {
-    [[TPEventBus sharedBus] unregisterEventType:self.eventType token:self];
+    [self.delegate eventBusTokenWantUnregister:self];
 }
 
 @end
 
-@interface TPEventBus ()
+@interface TPEventBus () <TPEventBusTokenDelegate>
 
-@property (nonatomic, strong, readonly) dispatch_queue_t  dispatchQueue;
+@property (nonatomic, strong, readonly) NSLock *lock;
 @property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSMutableSet *> *tokens;
 
 @end
@@ -135,7 +155,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _dispatchQueue = dispatch_queue_create("com.eventbus.dispatch.queue", DISPATCH_QUEUE_CONCURRENT);
+        _lock = [NSLock new];
         _tokens = [NSMutableDictionary new];
     }
     return self;
@@ -164,8 +184,9 @@
                                       observer:observer
                                       selector:selector
                                         object:object
-                                         queue:queue];
-    [self safeAddToken:token forEventType:eventType];
+                                         queue:queue
+                                      delegate:self];
+    [self safeAddToken:token];
 }
 
 - (void)registerEventType:(Class)eventType observer:(id)observer selector:(SEL)selector {
@@ -173,7 +194,7 @@
 }
 
 - (void)unregisterEventType:(Class)eventType observer:(id)observer object:(id)object {
-    NSArray<TPEventBusToken *> *tokens = [observer eventBusUnregisterableBag].unregisterables.allObjects;
+    NSArray<TPEventBusToken *> *tokens = [observer eventBusUnregisterableBag].allUnregisterables;
     [tokens enumerateObjectsUsingBlock:^(TPEventBusToken * _Nonnull token, NSUInteger idx, BOOL * _Nonnull stop) {
         if (token.eventType == eventType) {
             if (object) {
@@ -192,18 +213,14 @@
 }
 
 - (void)unregisterObserver:(id)observer {
-    NSArray<TPEventBusToken *> *tokens = [observer eventBusUnregisterableBag].unregisterables.allObjects;
+    NSArray<TPEventBusToken *> *tokens = [observer eventBusUnregisterableBag].allUnregisterables;
     [tokens enumerateObjectsUsingBlock:^(TPEventBusToken * _Nonnull token, NSUInteger idx, BOOL * _Nonnull stop) {
         [token unregister];
     }];
 }
 
-- (void)unregisterEventType:(Class)eventType token:(TPEventBusToken *)token {
-    [self safeRemoveToken:token forEventType:eventType];
-}
-
 - (void)postEvent:(id<TPEvent>)event object:(id)object {
-    NSArray<TPEventBusToken *> *tokens = [self safeTokensForEventType:event.class];
+    NSArray<TPEventBusToken *> *tokens = [self tokensForEventType:event.class];
     [tokens enumerateObjectsUsingBlock:^(TPEventBusToken * _Nonnull token, NSUInteger idx, BOOL * _Nonnull stop) {
         id observer = token.observer;
         SEL selector = token.selector;
@@ -220,6 +237,12 @@
 
 - (void)postEvent:(id<TPEvent>)event {
     [self postEvent:event object:nil];
+}
+
+#pragma mark - TPEventBusTokenDelegate
+
+- (void)eventBusTokenWantUnregister:(TPEventBusToken *)token {
+    [self safeRemoveToken:token];
 }
 
 #pragma mark - Private
@@ -258,45 +281,35 @@
     return ht;
 }
 
-- (void)safeAddToken:(TPEventBusToken *)token forEventType:(Class)eventType {
-    dispatch_barrier_async(self.dispatchQueue, ^{
-        NSMutableSet *ht = [self hashTableForEventType:eventType];
-        if (![ht containsObject:token]) {
-            [[token.observer eventBusUnregisterableBag] addUnregisterable:token];
-            [ht addObject:token];
-        }
-    });
+- (NSArray *)tokensForEventType:(Class)eventType {
+    return [self hashTableForEventType:eventType].allObjects;
 }
 
-- (void)safeRemoveToken:(TPEventBusToken *)token forEventType:(Class)eventType {
-    dispatch_barrier_async(self.dispatchQueue, ^{
-        NSMutableSet *ht = [self hashTableForEventType:eventType];
-        if ([ht containsObject:token]) {
-            [ht removeObject:token];
-            if (ht.count == 0) {
-                [self safeTokensForEventType:eventType];
-            }
-        }
-    });
+- (void)removeToken:(TPEventBusToken *)token {
+    NSMutableSet *ht = [self hashTableForEventType:token.eventType];
+    if ([ht containsObject:token]) {
+        [ht removeObject:token];
+    }
 }
 
-- (void)safeRemoveTokensForEventType:(Class)eventType {
-    dispatch_barrier_async(self.dispatchQueue, ^{
-        [self removeTokensForEventType:eventType];
-    });
+- (void)addToken:(TPEventBusToken *)token {
+    NSMutableSet *ht = [self hashTableForEventType:token.eventType];
+    if (![ht containsObject:token]) {
+        [[token.observer eventBusUnregisterableBag] addUnregisterable:token];
+        [ht addObject:token];
+    }
 }
 
-- (NSArray *)safeTokensForEventType:(Class)eventType {
-    __block NSArray *tokens = nil;
-    dispatch_sync(self.dispatchQueue, ^{
-        tokens = [[self hashTableForEventType:eventType] allObjects];
-    });
-    return tokens;
+- (void)safeAddToken:(TPEventBusToken *)token {
+    [self.lock lock];
+    [self addToken:token];
+    [self.lock unlock];
 }
 
-- (void)removeTokensForEventType:(Class)eventType {
-    NSString *key = [self keyFromEventType:eventType];
-    self.tokens[key] = nil;
+- (void)safeRemoveToken:(TPEventBusToken *)token {
+    [self.lock lock];
+    [self removeToken:token];
+    [self.lock unlock];
 }
 
 @end

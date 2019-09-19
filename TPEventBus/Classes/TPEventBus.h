@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TPEventBusUnregisterableBag : NSObject
 
-@property (nonatomic, strong, readonly) NSHashTable *unregisterables;
+- (NSArray<id<TPEventBusUnregisterable>> *)allUnregisterables;
 
 - (void)addUnregisterable:(id<TPEventBusUnregisterable>)unregisterable;
 
@@ -55,8 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)unregisterEventType:(Class)eventType observer:(id)observer NS_SWIFT_NAME(unregister(eventType:observer:));
 
 - (void)unregisterObserver:(id)observer NS_SWIFT_NAME(unregister(observer:));
-
-- (void)unregisterEventType:(Class)eventType token:(TPEventBusToken *)token NS_SWIFT_NAME(unregister(eventType:token:));
 
 - (void)postEvent:(id<TPEvent>)event object:(nullable id)object NS_SWIFT_NAME(post(event:object:));
 

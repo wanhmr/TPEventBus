@@ -22,18 +22,33 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-    AViewController *aVC = [AViewController new];
-    aVC.view.frame = CGRectMake(0, 0, self.view.frame.size.width, 100);
-    [self.view addSubview:aVC.view];
-    [self addChildViewController:aVC];
-    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:) object:self queue:[NSOperationQueue new]];
+//    AViewController *aVC = [AViewController new];
+//    aVC.view.frame = CGRectMake(0, 0, self.view.frame.size.width, 100);
+//    [self.view addSubview:aVC.view];
+//    [self addChildViewController:aVC];
+//    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:) object:self queue:[NSOperationQueue new]];
 }
 
 - (IBAction)testAction:(id)sender {
     {
         TPTestEvent *event = [TPTestEvent new];
         event.name = @"Tpphha";
-        [[TPEventBus sharedBus] postEvent:event object:nil];
+        CFTimeInterval startTime = CACurrentMediaTime();
+        for (NSUInteger i = 0; i < 10000; i++) {
+            [[TPEventBus sharedBus] postEvent:event object:nil];
+        }
+        CFTimeInterval endTime = CACurrentMediaTime();
+        CFTimeInterval consumingTime = endTime - startTime;
+        NSLog(@"TPEventBus: 耗时：%@", @(consumingTime * 1000));
+    }
+    {
+        CFTimeInterval startTime = CACurrentMediaTime();
+        for (NSUInteger i = 0; i < 10000; i++) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"Tpphha" object:nil];
+        }
+        CFTimeInterval endTime = CACurrentMediaTime();
+        CFTimeInterval consumingTime = endTime - startTime;
+        NSLog(@"NSNotificationCenter: 耗时：%@", @(consumingTime * 1000));
     }
     {
         TPMediaLikedChangedEvent *event = [[TPMediaLikedChangedEvent alloc] initWithLiked:@(YES)];
