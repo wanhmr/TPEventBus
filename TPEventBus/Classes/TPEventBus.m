@@ -18,12 +18,10 @@
 @implementation TPEventBusUnregisterableBag
 
 - (void)dealloc {
-    NSArray<id<TPEventBusUnregisterable>> *allUnregisterables = _unregisterables.allObjects;
-    [_unregisterables removeAllObjects];
-    
-    [allUnregisterables enumerateObjectsUsingBlock:^(id<TPEventBusUnregisterable> obj, NSUInteger idx, BOOL *stop) {
+    [_unregisterables.allObjects enumerateObjectsUsingBlock:^(id<TPEventBusUnregisterable> obj, NSUInteger idx, BOOL *stop) {
         [obj unregister];
     }];
+    [_unregisterables removeAllObjects];
 }
 
 - (instancetype)init
