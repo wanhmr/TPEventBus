@@ -9,7 +9,7 @@
 #import "TPEventBus.h"
 #import <objc/runtime.h>
 
-@implementation TPEventBusUnregisterablewBag
+@implementation TPEventBusUnregisterableBag
 
 - (void)dealloc {
     [[_unregisterables objectEnumerator].allObjects enumerateObjectsUsingBlock:^(id<TPEventBusUnregisterable> obj, NSUInteger idx, BOOL *stop) {
@@ -35,10 +35,10 @@
 
 @implementation NSObject (TPEventBus)
 
-- (TPEventBusUnregisterablewBag *)eventBusUnregisterableBag {
-    TPEventBusUnregisterablewBag *bag = objc_getAssociatedObject(self, _cmd);
+- (TPEventBusUnregisterableBag *)eventBusUnregisterableBag {
+    TPEventBusUnregisterableBag *bag = objc_getAssociatedObject(self, _cmd);
     if (!bag) {
-        bag = [[TPEventBusUnregisterablewBag alloc] init];
+        bag = [[TPEventBusUnregisterableBag alloc] init];
         objc_setAssociatedObject(self, _cmd, bag, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return bag;
