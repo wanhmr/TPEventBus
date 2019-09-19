@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3D46627D233352290030A940 /* AViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D46627C233352290030A940 /* AViewController.swift */; };
 		3D5A515F2333131600673DE1 /* TPMediaLikedChangedEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D5A515E2333131600673DE1 /* TPMediaLikedChangedEvent.m */; };
 		3D81861523326BF800558785 /* TPTestEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D81861423326BF800558785 /* TPTestEvent.m */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
@@ -41,6 +42,8 @@
 /* Begin PBXFileReference section */
 		078D939D3A7EF837BC49A46A /* Pods-TPEventBus_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TPEventBus_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-TPEventBus_Example/Pods-TPEventBus_Example.release.xcconfig"; sourceTree = "<group>"; };
 		239BFA9F9A34933D161D4135 /* Pods-TPEventBus_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TPEventBus_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TPEventBus_Tests/Pods-TPEventBus_Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		3D46627B233352280030A940 /* TPEventBus_Example-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TPEventBus_Example-Bridging-Header.h"; sourceTree = "<group>"; };
+		3D46627C233352290030A940 /* AViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AViewController.swift; sourceTree = "<group>"; };
 		3D5A515D2333131600673DE1 /* TPMediaLikedChangedEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPMediaLikedChangedEvent.h; sourceTree = "<group>"; };
 		3D5A515E2333131600673DE1 /* TPMediaLikedChangedEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPMediaLikedChangedEvent.m; sourceTree = "<group>"; };
 		3D81861323326BF800558785 /* TPTestEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPTestEvent.h; sourceTree = "<group>"; };
@@ -150,6 +153,8 @@
 				3D81861423326BF800558785 /* TPTestEvent.m */,
 				3D5A515D2333131600673DE1 /* TPMediaLikedChangedEvent.h */,
 				3D5A515E2333131600673DE1 /* TPMediaLikedChangedEvent.m */,
+				3D46627C233352290030A940 /* AViewController.swift */,
+				3D46627B233352280030A940 /* TPEventBus_Example-Bridging-Header.h */,
 			);
 			name = "Example for TPEventBus";
 			path = TPEventBus;
@@ -257,6 +262,9 @@
 				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = wanhmr;
 				TargetAttributes = {
+					6003F589195388D20070C39A = {
+						LastSwiftMigration = 1030;
+					};
 					6003F5AD195388D20070C39A = {
 						TestTargetID = 6003F589195388D20070C39A;
 					};
@@ -382,6 +390,7 @@
 				6003F5A7195388D20070C39A /* TPViewController.m in Sources */,
 				3D5A515F2333131600673DE1 /* TPMediaLikedChangedEvent.m in Sources */,
 				3D81861523326BF800558785 /* TPTestEvent.m in Sources */,
+				3D46627D233352290030A940 /* AViewController.swift in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -510,12 +519,16 @@
 			baseConfigurationReference = B719E4CC6C37A9999676A170 /* Pods-TPEventBus_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TPEventBus/TPEventBus-Prefix.pch";
 				INFOPLIST_FILE = "TPEventBus/TPEventBus-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "TPEventBus/TPEventBus_Example-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				WRAPPER_EXTENSION = app;
 			};
@@ -526,12 +539,15 @@
 			baseConfigurationReference = 078D939D3A7EF837BC49A46A /* Pods-TPEventBus_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TPEventBus/TPEventBus-Prefix.pch";
 				INFOPLIST_FILE = "TPEventBus/TPEventBus-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "TPEventBus/TPEventBus_Example-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				WRAPPER_EXTENSION = app;
 			};
@@ -541,6 +557,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 239BFA9F9A34933D161D4135 /* Pods-TPEventBus_Tests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
@@ -566,6 +583,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = FB88F55B4AD8180B2F81631F /* Pods-TPEventBus_Tests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",

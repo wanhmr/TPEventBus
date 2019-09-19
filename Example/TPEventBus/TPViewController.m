@@ -10,6 +10,7 @@
 #import <TPEventBus/TPEventBus.h>
 #import "TPTestEvent.h"
 #import "TPMediaLikedChangedEvent.h"
+#import "TPEventBus_Example-Swift.h"
 
 @interface TPViewController ()
 
@@ -21,6 +22,10 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    AViewController *aVC = [AViewController new];
+    aVC.view.frame = CGRectMake(0, 0, self.view.frame.size.width, 100);
+    [self.view addSubview:aVC.view];
+    [self addChildViewController:aVC];
     [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:) object:self queue:[NSOperationQueue new]];
 }
 
