@@ -83,17 +83,17 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="mqw-Nl-2XL">
-                                <rect key="frame" x="151" y="293.5" width="73" height="80.5"/>
+                                <rect key="frame" x="172.5" y="293.5" width="30" height="80.5"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Yw-Ph-ywy">
-                                        <rect key="frame" x="31.5" y="0.0" width="10.5" height="20.5"/>
+                                        <rect key="frame" x="10" y="0.0" width="10.5" height="20.5"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ekl-5g-WXR">
-                                        <rect key="frame" x="0.0" y="50.5" width="73" height="30"/>
-                                        <state key="normal" title="Add Count"/>
+                                        <rect key="frame" x="0.0" y="50.5" width="30" height="30"/>
+                                        <state key="normal" title="Add"/>
                                         <connections>
                                             <action selector="addAction:" destination="7gK-PX-Mkl" eventType="touchUpInside" id="bqq-yM-NgE"/>
                                         </connections>
