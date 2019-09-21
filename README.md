@@ -156,7 +156,7 @@ source of the picture: [老司机教你 “飙” EventBus 3](https://segmentfau
 ### Swift
 
 ```Swift
-TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onNext { [weak self] (event, object) in
+TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onEvent { [weak self] (event, object) in
     guard let self = self else {
         return
     }
@@ -168,7 +168,7 @@ TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onNext {
 ### Objective-C
 
 ```Objective-C
-[[TPEventSubscribe(TPCountEvent).onQueue([NSOperationQueue new]).forObject(nil) onNext:^(TPCountEvent * _Nonnull event, id  _Nullable object) {
+[[TPEventSubscribe(TPCountEvent).onQueue([NSOperationQueue new]).forObject(nil) onEvent:^(TPCountEvent * _Nonnull event, id  _Nullable object) {
 	// do something
 }] disposedByObject:self];
 ```
