@@ -27,33 +27,37 @@
 //    [self.view addSubview:aVC.view];
 //    [self addChildViewController:aVC];
 //    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:) object:self queue:[NSOperationQueue new]];
+    TPEventSubscriberMaker<TPMediaLikedChangedEvent *> *maker = [TPEventBus sharedBus].subscribe(TPMediaLikedChangedEvent.class).onQueue([NSOperationQueue new]).forObject(self);
+    [maker onNext:^(TPMediaLikedChangedEvent * _Nonnull event, id  _Nullable object) {
+        NSLog(@"event name: %@, object: %@, thread: %@", event.liked, object, [NSThread currentThread]);
+    }];
 }
 
 - (IBAction)testAction:(id)sender {
-    {
-        TPTestEvent *event = [TPTestEvent new];
-        event.name = @"Tpphha";
-        CFTimeInterval startTime = CACurrentMediaTime();
-        for (NSUInteger i = 0; i < 10000; i++) {
-            [[TPEventBus sharedBus] postEvent:event object:nil];
-        }
-        CFTimeInterval endTime = CACurrentMediaTime();
-        CFTimeInterval consumingTime = endTime - startTime;
-        NSLog(@"TPEventBus: 耗时：%@", @(consumingTime * 1000));
-    }
-    {
-        CFTimeInterval startTime = CACurrentMediaTime();
-        for (NSUInteger i = 0; i < 10000; i++) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"Tpphha" object:nil];
-        }
-        CFTimeInterval endTime = CACurrentMediaTime();
-        CFTimeInterval consumingTime = endTime - startTime;
-        NSLog(@"NSNotificationCenter: 耗时：%@", @(consumingTime * 1000));
-    }
+//    {
+//        TPTestEvent *event = [TPTestEvent new];
+//        event.name = @"Tpphha";
+//        CFTimeInterval startTime = CACurrentMediaTime();
+//        for (NSUInteger i = 0; i < 10000; i++) {
+//            [[TPEventBus sharedBus] postEvent:event object:nil];
+//        }
+//        CFTimeInterval endTime = CACurrentMediaTime();
+//        CFTimeInterval consumingTime = endTime - startTime;
+//        NSLog(@"TPEventBus: 耗时：%@", @(consumingTime * 1000));
+//    }
+//    {
+//        CFTimeInterval startTime = CACurrentMediaTime();
+//        for (NSUInteger i = 0; i < 10000; i++) {
+//            [[NSNotificationCenter defaultCenter] postNotificationName:@"Tpphha" object:nil];
+//        }
+//        CFTimeInterval endTime = CACurrentMediaTime();
+//        CFTimeInterval consumingTime = endTime - startTime;
+//        NSLog(@"NSNotificationCenter: 耗时：%@", @(consumingTime * 1000));
+//    }
     {
         TPMediaLikedChangedEvent *event = [[TPMediaLikedChangedEvent alloc] initWithLiked:@(YES)];
-        //    [[TPEventBus sharedBus] postEvent:event object:self];
-        [[TPEventBus sharedBus] postEvent:event];
+        [[TPEventBus sharedBus] postEvent:event object:self];
+//        [[TPEventBus sharedBus] postEvent:event];
     }
 }
 

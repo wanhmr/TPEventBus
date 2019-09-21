@@ -19,7 +19,7 @@
 //    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:) object:nil queue:[NSOperationQueue new]];
 //    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:)];
 //    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:)];
-    [[TPEventBus sharedBus] registerEventType:TPMediaLikedChangedEvent.class observer:self selector:@selector(onMediaLikedChangedEvent:)];
+//    [[TPEventBus sharedBus] registerEventType:TPMediaLikedChangedEvent.class observer:self selector:@selector(onMediaLikedChangedEvent:)];
     return YES;
 }
 

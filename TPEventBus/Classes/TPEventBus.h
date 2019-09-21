@@ -14,33 +14,21 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol TPEventBusUnregisterable <NSObject>
+typedef void(^TPEventSubscriptionBlock)(id, _Nullable id);
 
-- (void)unregister;
+@interface TPEventSubscriberMaker<__covariant EventType> : NSObject
 
-@end
-
-@interface TPEventBusUnregisterableBag : NSObject
-
-- (NSArray<id<TPEventBusUnregisterable>> *)allUnregisterables;
-
-- (void)addUnregisterable:(id<TPEventBusUnregisterable>)unregisterable;
-
-@end
-
-@interface NSObject (TPEventBus)
-
-@property (nonatomic, strong, readonly) TPEventBusUnregisterableBag *eventBusUnregisterableBag;
-
-@end
-
-@interface TPEventBusToken : NSObject <TPEventBusUnregisterable>
+- (TPEventSubscriberMaker *(^)(NSOperationQueue *))onQueue;
+- (TPEventSubscriberMaker *(^)(id))forObject;
+- (TPEventSubscriberMaker *)onNext:(void(^)(EventType event, _Nullable id object))block;
 
 @end
 
 @interface TPEventBus : NSObject
 
 @property (class, strong, readonly) TPEventBus *sharedBus NS_SWIFT_NAME(shared);
+
+@property (nonatomic, strong, readonly) TPEventSubscriberMaker *(^subscribe)(Class eventType);
 
 - (void)registerEventType:(Class)eventType
                  observer:(id)observer
