@@ -12,7 +12,7 @@
 #import "TPEvent.h"
 #endif
 
-#define TPEventSubscriber(_EventType_) ((TPEventSubscriberMaker<_EventType_ *> *)[TPEventBus sharedBus].subscribe(_EventType_.class))
+#define TPEventSubscribe(_EventType_) ((TPEventSubscriber<_EventType_ *> *)[TPEventSubscriber subscribeEventType:_EventType_.class])
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,12 +29,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface TPEventSubscriberMaker<__covariant EventType> : NSObject
+@interface TPEventSubscriber<__covariant EventType> : NSObject
 
 typedef void(^TPEventSubscriptionBlock)(EventType event, _Nullable id object);
 
-- (TPEventSubscriberMaker<EventType> *(^)(NSOperationQueue * _Nullable))onQueue;
-- (TPEventSubscriberMaker<EventType> *(^)(_Nullable id))forObject;
++ (TPEventSubscriber<EventType> *)subscribeEventType:(Class)eventType NS_SWIFT_NAME(subscribe(eventType:));
+
+- (TPEventSubscriber<EventType> *(^)(NSOperationQueue * _Nullable))onQueue;
+- (TPEventSubscriber<EventType> *(^)(_Nullable id))forObject;
 - (id<TPEventToken>)onNext:(TPEventSubscriptionBlock)block;
 
 @end
@@ -42,8 +44,6 @@ typedef void(^TPEventSubscriptionBlock)(EventType event, _Nullable id object);
 @interface TPEventBus : NSObject
 
 @property (class, strong, readonly) TPEventBus *sharedBus NS_SWIFT_NAME(shared);
-
-@property (nonatomic, strong, readonly) TPEventSubscriberMaker *(^subscribe)(Class eventType);
 
 - (void)registerEventType:(Class)eventType
                  observer:(id)observer

@@ -17,6 +17,9 @@ class AViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onNext { (event, object) in
+            print("A View Controller count did change: \(event.count)")
+        }.disposed(by: self)
     }
     
     @IBAction func addAction(_ sender: Any) {

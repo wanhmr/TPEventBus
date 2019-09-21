@@ -307,7 +307,7 @@
 
 @end
 
-@interface TPEventSubscriberMaker ()
+@interface TPEventSubscriber ()
 
 @property (nonatomic, weak, readonly) TPEventBus *eventBus;
 @property (nonatomic, strong, readonly) Class eventType;
@@ -317,7 +317,7 @@
 
 @end
 
-@implementation TPEventSubscriberMaker
+@implementation TPEventSubscriber
 
 - (instancetype)initWithEventBus:(TPEventBus *)eventBus eventType:(Class)eventType {
     self = [super init];
@@ -328,15 +328,19 @@
     return self;
 }
 
-- (TPEventSubscriberMaker<id> * (^)(NSOperationQueue *))onQueue {
-    return ^ TPEventSubscriberMaker * (NSOperationQueue *queue) {
++ (TPEventSubscriber *)subscribeEventType:(Class)eventType {
+    return [[TPEventSubscriber alloc] initWithEventBus:[TPEventBus sharedBus] eventType:eventType];
+}
+
+- (TPEventSubscriber<id> * (^)(NSOperationQueue *))onQueue {
+    return ^ TPEventSubscriber * (NSOperationQueue *queue) {
         self.queue = queue;
         return self;
     };
 }
 
-- (TPEventSubscriberMaker<id> * (^)(id))forObject {
-    return ^ TPEventSubscriberMaker * (id object) {
+- (TPEventSubscriber<id> * (^)(id))forObject {
+    return ^ TPEventSubscriber * (id object) {
         self.object = object;
         return self;
     };
@@ -376,12 +380,6 @@
         eventBus = [TPEventBus new];
     });
     return eventBus;
-}
-
-- (TPEventSubscriberMaker * (^)(Class))subscribe {
-    return ^ TPEventSubscriberMaker * (Class eventType) {
-        return [[TPEventSubscriberMaker alloc] initWithEventBus:self eventType:eventType];
-    };
 }
 
 - (void)registerEventType:(Class)eventType
