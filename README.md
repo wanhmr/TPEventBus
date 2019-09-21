@@ -157,12 +157,12 @@ source of the picture: [老司机教你 “飙” EventBus 3](https://segmentfau
 
 ```Swift
 TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onNext { [weak self] (event, object) in
-        guard let self = self else {
-            return
-        }
-        
-        // do something
-	}.disposed(by: self)
+    guard let self = self else {
+        return
+    }
+    
+    // do something
+}.disposed(by: self)
 ```
 	
 ### Objective-C
