@@ -15,6 +15,10 @@ class AViewController: UIViewController {
     
     @IBOutlet weak var countLabel: UILabel!
     
+    deinit {
+        print("AViewController deinit.")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onNext { [weak self] (event, object) in
@@ -24,6 +28,13 @@ class AViewController: UIViewController {
             
             self.countLabel.text = "\(self.count)"
         }.disposed(by: self)
+        
+        TPEventBus.shared.register(eventType: TPCountEvent.self, observer: self, selector: #selector(onCountEvent(event:object:)))
+//        TPEventBus.shared.unregister(eventType: TPCountEvent.self, observer: self)
+    }
+    
+    @objc func onCountEvent(event: TPCountEvent, object: Any?) {
+        
     }
     
     @IBAction func addAction(_ sender: Any) {
