@@ -188,7 +188,7 @@ pod 'TPEventBus'
 
 ## Author
 
-wanhmr, tpx@meitu.com
+tpphha, tpphha@gmail.com
 
 ## License
 
