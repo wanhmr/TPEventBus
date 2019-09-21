@@ -11,7 +11,7 @@
 
 @protocol TPEventTokenDelegate <NSObject>
 
-- (void)eventTokenWantDispose:(id<TPEventToken>)token;
+- (void)eventTokenWantsDispose:(id<TPEventToken>)token;
 
 @end
 
@@ -206,7 +206,7 @@
 }
 
 - (void)dispose {
-    [self.delegate eventTokenWantDispose:self];
+    [self.delegate eventTokenWantsDispose:self];
 }
 
 - (void)disposedByObject:(id)object {
@@ -298,7 +298,7 @@
 }
 
 - (void)dispose {
-    [self.delegate eventTokenWantDispose:self];
+    [self.delegate eventTokenWantsDispose:self];
 }
 
 - (void)disposedByObject:(id)object {
@@ -445,7 +445,7 @@
 
 #pragma mark - TPEventTokenDelegate
 
-- (void)eventTokenWantDispose:(id<TPEventToken>)token {
+- (void)eventTokenWantsDispose:(id<TPEventToken>)token {
     [self removeToken:token];
 }
 
