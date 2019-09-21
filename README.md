@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/cocoapods/l/TPEventBus.svg?style=flat)](https://cocoapods.org/pods/TPEventBus)
 [![Platform](https://img.shields.io/cocoapods/p/TPEventBus.svg?style=flat)](https://cocoapods.org/pods/TPEventBus)
 
-EventBus is a publish/subscribe event bus for iOS, inspired by [EventBus](https://github.com/greenrobot/EventBus) and [QTEventBus](https://github.com/LeoMobileDeveloper/QTEventBus).
+TPEventBus is a publish/subscribe event bus for iOS, inspired by [EventBus](https://github.com/greenrobot/EventBus) and [QTEventBus](https://github.com/LeoMobileDeveloper/QTEventBus).
 
 ![Event Bus](http://i.imgur.com/BNtzhB7.png)
 source of the picture: [老司机教你 “飙” EventBus 3](https://segmentfault.com/a/1190000005089229)
