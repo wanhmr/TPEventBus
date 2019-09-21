@@ -21,7 +21,7 @@ class AViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onNext { [weak self] (event, object) in
+        TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onEvent { [weak self] (event, object) in
             guard let self = self else {
                 return
             }

@@ -346,7 +346,7 @@
     };
 }
 
-- (id<TPEventToken>)onNext:(void (^)(id, id))block {
+- (id<TPEventToken>)onEvent:(void (^)(id, id))block {
     TPAnonymousEventToken *token = [[TPAnonymousEventToken alloc] initWithEventType:self.eventType object:self.object queue:self.queue block:block];
     token.delegate = self.eventBus;
     [self.eventBus addToken:token];
