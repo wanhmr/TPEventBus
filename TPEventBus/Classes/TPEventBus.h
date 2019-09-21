@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)dispose;
 
-- (void)disposedByObject:(id)object;
+- (void)disposedByObject:(id)object NS_SWIFT_NAME(disposed(by:));
 
 @end
 

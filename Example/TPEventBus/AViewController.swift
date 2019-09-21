@@ -17,14 +17,17 @@ class AViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onNext { (event, object) in
-            print("A View Controller count did change: \(event.count)")
+        TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onNext { [weak self] (event, object) in
+            guard let self = self else {
+                return
+            }
+            
+            self.countLabel.text = "\(self.count)"
         }.disposed(by: self)
     }
     
     @IBAction func addAction(_ sender: Any) {
         count += 1
-        self.countLabel.text = "\(count)"
         let event = TPCountEvent.init(count: count)
         TPEventBus.shared.post(event: event, object: self)
     }
