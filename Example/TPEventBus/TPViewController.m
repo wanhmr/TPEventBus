@@ -27,10 +27,13 @@
 //    [self.view addSubview:aVC.view];
 //    [self addChildViewController:aVC];
 //    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:) object:self queue:[NSOperationQueue new]];
-    TPEventSubscriberMaker<TPMediaLikedChangedEvent *> *maker = [TPEventBus sharedBus].subscribe(TPMediaLikedChangedEvent.class).onQueue([NSOperationQueue new]).forObject(self);
-    [maker onNext:^(TPMediaLikedChangedEvent * _Nonnull event, id  _Nullable object) {
+    [[TPEventSubscriber(TPMediaLikedChangedEvent).onQueue([NSOperationQueue new]).forObject(nil) onNext:^(TPMediaLikedChangedEvent * _Nonnull event, id  _Nullable object) {
         NSLog(@"event name: %@, object: %@, thread: %@", event.liked, object, [NSThread currentThread]);
-    }];
+    }] disposedByObject:self];
+    
+    [[TPEventSubscriber(TPTestEvent) onNext:^(TPTestEvent * _Nonnull event, id  _Nullable object) {
+        NSLog(@"event name: %@, object: %@, thread: %@", event.name, object, [NSThread currentThread]);
+    }] disposedByObject:self];
 }
 
 - (IBAction)testAction:(id)sender {

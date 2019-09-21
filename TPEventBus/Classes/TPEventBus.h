@@ -12,15 +12,30 @@
 #import "TPEvent.h"
 #endif
 
+#define TPEventSubscriber(_EventType_) ((TPEventSubscriberMaker<_EventType_ *> *)[TPEventBus sharedBus].subscribe(_EventType_.class))
+
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void(^TPEventSubscriptionBlock)(id, _Nullable id);
+@protocol TPEventToken <NSObject>
+
+@property (nonatomic, strong, readonly) Class eventType;
+@property (nullable, nonatomic, weak, readonly) id object;
+
+- (void)executeWithEvent:(id<TPEvent>)event object:(nullable id)object;
+
+- (void)dispose;
+
+- (void)disposedByObject:(id)object;
+
+@end
 
 @interface TPEventSubscriberMaker<__covariant EventType> : NSObject
 
-- (TPEventSubscriberMaker *(^)(NSOperationQueue *))onQueue;
-- (TPEventSubscriberMaker *(^)(id))forObject;
-- (TPEventSubscriberMaker *)onNext:(void(^)(EventType event, _Nullable id object))block;
+typedef void(^TPEventSubscriptionBlock)(EventType event, _Nullable id object);
+
+- (TPEventSubscriberMaker<EventType> *(^)(NSOperationQueue * _Nullable))onQueue;
+- (TPEventSubscriberMaker<EventType> *(^)(_Nullable id))forObject;
+- (nullable id<TPEventToken>)onNext:(TPEventSubscriptionBlock)block;
 
 @end
 

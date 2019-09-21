@@ -9,26 +9,17 @@
 #import "TPEventBus.h"
 #import <objc/runtime.h>
 
-@protocol TPEventToken <NSObject>
-    
-@property (nonatomic, strong, readonly) Class eventType;
-@property (nullable, nonatomic, weak, readonly) id object;
-    
-- (void)executeWithEvent:(id<TPEvent>)event object:(nullable id)object;
-    
-- (void)dispose;
-    
+@protocol TPEventTokenDelegate <NSObject>
+
+- (void)eventTokenWantDispose:(id<TPEventToken>)token;
+
 @end
 
-@interface TPEventBus ()
+@interface TPEventBus () <TPEventTokenDelegate>
 
 - (BOOL)removeToken:(id<TPEventToken>)token;
 
 - (BOOL)addToken:(id<TPEventToken>)token;
-
-- (BOOL)safeAddToken:(id<TPEventToken>)token;
-
-- (BOOL)safeRemoveToken:(id<TPEventToken>)token;
 
 @end
 
@@ -103,12 +94,6 @@
     }
     return bag;
 }
-
-@end
-
-@protocol TPEventTokenDelegate <NSObject>
-
-- (void)eventTokenWantDispose:(id<TPEventToken>)token;
 
 @end
 
@@ -224,6 +209,10 @@
     [self.delegate eventTokenWantDispose:self];
 }
 
+- (void)disposedByObject:(id)object {
+    [[object tp_eventTokenDisposableBag] addToken:self];
+}
+
 @end
 
 @interface TPAnonymousEventToken : NSObject <TPEventToken>
@@ -312,6 +301,10 @@
     [self.delegate eventTokenWantDispose:self];
 }
 
+- (void)disposedByObject:(id)object {
+    [[object tp_eventTokenDisposableBag] addToken:self];
+}
+
 @end
 
 @interface TPEventSubscriberMaker ()
@@ -335,29 +328,32 @@
     return self;
 }
 
-- (TPEventSubscriberMaker * (^)(NSOperationQueue *))onQueue {
+- (TPEventSubscriberMaker<id> * (^)(NSOperationQueue *))onQueue {
     return ^ TPEventSubscriberMaker * (NSOperationQueue *queue) {
         self.queue = queue;
         return self;
     };
 }
 
-- (TPEventSubscriberMaker * (^)(id))forObject {
+- (TPEventSubscriberMaker<id> * (^)(id))forObject {
     return ^ TPEventSubscriberMaker * (id object) {
         self.object = object;
         return self;
     };
 }
 
-- (TPEventSubscriberMaker *)onNext:(void (^)(id, id))block {
+- (id<TPEventToken>)onNext:(void (^)(id, id))block {
     TPAnonymousEventToken *token = [[TPAnonymousEventToken alloc] initWithEventType:self.eventType object:self.object queue:self.queue block:block];
-    [self.eventBus safeAddToken:token];
-    return self;
+    token.delegate = self.eventBus;
+    if ([self.eventBus addToken:token]) {
+        return token;
+    }
+    return nil;
 }
 
 @end
 
-@interface TPEventBus () <TPEventTokenDelegate>
+@interface TPEventBus ()
 
 @property (nonatomic, strong, readonly) NSLock *lock;
 @property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSMutableSet *> *tokens;
@@ -406,8 +402,8 @@
                                              object:object
                                               queue:queue
                                            delegate:self];
-    if ([self safeAddToken:token]) {
-        [[observer tp_eventTokenDisposableBag] addToken:token];
+    if ([self addToken:token]) {
+        [token disposedByObject:observer];
     }
 }
 
@@ -455,7 +451,7 @@
 #pragma mark - TPEventTokenDelegate
 
 - (void)eventTokenWantDispose:(id<TPEventToken>)token {
-    [self safeRemoveToken:token];
+    [self removeToken:token];
 }
 
 #pragma mark - Private
@@ -478,7 +474,7 @@
     return [self hashTableForEventType:eventType].allObjects;
 }
 
-- (BOOL)removeToken:(id<TPEventToken>)token {
+- (BOOL)_removeToken:(id<TPEventToken>)token {
     NSMutableSet *ht = [self hashTableForEventType:token.eventType];
     if ([ht containsObject:token]) {
         [ht removeObject:token];
@@ -487,7 +483,7 @@
     return NO;
 }
 
-- (BOOL)addToken:(id<TPEventToken>)token {
+- (BOOL)_addToken:(id<TPEventToken>)token {
     NSMutableSet *ht = [self hashTableForEventType:token.eventType];
     if (![ht containsObject:token]) {
         [ht addObject:token];
@@ -496,7 +492,7 @@
     return NO;
 }
 
-- (BOOL)safeAddToken:(id<TPEventToken>)token {
+- (BOOL)addToken:(id<TPEventToken>)token {
     BOOL result = NO;
     [self.lock lock];
     result = [self addToken:token];
@@ -504,7 +500,7 @@
     return result;
 }
 
-- (BOOL)safeRemoveToken:(id<TPEventToken>)token {
+- (BOOL)removeToken:(id<TPEventToken>)token {
     BOOL result = NO;
     [self.lock lock];
     result = [self removeToken:token];
