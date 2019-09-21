@@ -495,7 +495,7 @@
 - (BOOL)addToken:(id<TPEventToken>)token {
     BOOL result = NO;
     [self.lock lock];
-    result = [self addToken:token];
+    result = [self _addToken:token];
     [self.lock unlock];
     return result;
 }
@@ -503,7 +503,7 @@
 - (BOOL)removeToken:(id<TPEventToken>)token {
     BOOL result = NO;
     [self.lock lock];
-    result = [self removeToken:token];
+    result = [self _removeToken:token];
     [self.lock unlock];
     return result;
 }

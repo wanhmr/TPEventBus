@@ -7,6 +7,15 @@
 //
 
 @import XCTest;
+#import <TPEventBus/TPEventBus.h>
+
+@interface TPBenchmarkEvent : NSObject <TPEvent>
+
+@end
+
+@implementation TPBenchmarkEvent
+
+@end
 
 @interface Tests : XCTestCase
 
@@ -28,7 +37,25 @@
 
 - (void)testExample
 {
-    XCTFail(@"No implementation for \"%s\"", __PRETTY_FUNCTION__);
+    {
+        TPBenchmarkEvent *event = [TPBenchmarkEvent new];
+        CFTimeInterval startTime = CACurrentMediaTime();
+        for (NSUInteger i = 0; i < 10000; i++) {
+            [[TPEventBus sharedBus] postEvent:event object:nil];
+        }
+        CFTimeInterval endTime = CACurrentMediaTime();
+        CFTimeInterval consumingTime = endTime - startTime;
+        NSLog(@"TPEventBus: 耗时：%@", @(consumingTime * 1000));
+    }
+    {
+        CFTimeInterval startTime = CACurrentMediaTime();
+        for (NSUInteger i = 0; i < 10000; i++) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"Tpphha" object:nil];
+        }
+        CFTimeInterval endTime = CACurrentMediaTime();
+        CFTimeInterval consumingTime = endTime - startTime;
+        NSLog(@"NSNotificationCenter: 耗时：%@", @(consumingTime * 1000));
+    }
 }
 
 @end
