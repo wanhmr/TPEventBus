@@ -17,9 +17,9 @@
 
 @interface TPEventBus () <TPEventTokenDelegate>
 
-- (BOOL)removeToken:(id<TPEventToken>)token;
+- (void)removeToken:(id<TPEventToken>)token;
 
-- (BOOL)addToken:(id<TPEventToken>)token;
+- (void)addToken:(id<TPEventToken>)token;
 
 @end
 
@@ -345,10 +345,8 @@
 - (id<TPEventToken>)onNext:(void (^)(id, id))block {
     TPAnonymousEventToken *token = [[TPAnonymousEventToken alloc] initWithEventType:self.eventType object:self.object queue:self.queue block:block];
     token.delegate = self.eventBus;
-    if ([self.eventBus addToken:token]) {
-        return token;
-    }
-    return nil;
+    [self.eventBus addToken:token];
+    return token;
 }
 
 @end
@@ -402,9 +400,8 @@
                                              object:object
                                               queue:queue
                                            delegate:self];
-    if ([self addToken:token]) {
-        [token disposedByObject:observer];
-    }
+    [self addToken:token];
+    [token disposedByObject:observer];
 }
 
 - (void)registerEventType:(Class)eventType observer:(id)observer selector:(SEL)selector {
@@ -460,7 +457,7 @@
     return NSStringFromClass(eventType);
 }
 
-- (NSMutableSet *)hashTableForEventType:(Class)eventType {
+- (NSMutableSet<id<TPEventToken>> *)hashTableForEventType:(Class)eventType {
     NSString *key = [self keyFromEventType:eventType];
     NSMutableSet *ht = self.tokens[key];
     if (!ht) {
@@ -470,42 +467,34 @@
     return ht;
 }
 
-- (NSArray *)tokensForEventType:(Class)eventType {
+- (NSArray<id<TPEventToken>> *)tokensForEventType:(Class)eventType {
     return [self hashTableForEventType:eventType].allObjects;
 }
 
-- (BOOL)_removeToken:(id<TPEventToken>)token {
+- (void)_removeToken:(id<TPEventToken>)token {
     NSMutableSet *ht = [self hashTableForEventType:token.eventType];
     if ([ht containsObject:token]) {
         [ht removeObject:token];
-        return YES;
     }
-    return NO;
 }
 
-- (BOOL)_addToken:(id<TPEventToken>)token {
+- (void)_addToken:(id<TPEventToken>)token {
     NSMutableSet *ht = [self hashTableForEventType:token.eventType];
     if (![ht containsObject:token]) {
         [ht addObject:token];
-        return YES;
     }
-    return NO;
 }
 
-- (BOOL)addToken:(id<TPEventToken>)token {
-    BOOL result = NO;
+- (void)addToken:(id<TPEventToken>)token {
     [self.lock lock];
-    result = [self _addToken:token];
+    [self _addToken:token];
     [self.lock unlock];
-    return result;
 }
 
-- (BOOL)removeToken:(id<TPEventToken>)token {
-    BOOL result = NO;
+- (void)removeToken:(id<TPEventToken>)token {
     [self.lock lock];
-    result = [self _removeToken:token];
+    [self _removeToken:token];
     [self.lock unlock];
-    return result;
 }
 
 @end

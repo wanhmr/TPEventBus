@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3D46627D233352290030A940 /* AViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D46627C233352290030A940 /* AViewController.swift */; };
+		3D56D0AE233609CD003D4E9B /* TPCountEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D56D0AD233609CD003D4E9B /* TPCountEvent.m */; };
 		3D5A515F2333131600673DE1 /* TPMediaLikedChangedEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D5A515E2333131600673DE1 /* TPMediaLikedChangedEvent.m */; };
 		3D81861523326BF800558785 /* TPTestEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D81861423326BF800558785 /* TPTestEvent.m */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
@@ -44,6 +45,8 @@
 		239BFA9F9A34933D161D4135 /* Pods-TPEventBus_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TPEventBus_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-TPEventBus_Tests/Pods-TPEventBus_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		3D46627B233352280030A940 /* TPEventBus_Example-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TPEventBus_Example-Bridging-Header.h"; sourceTree = "<group>"; };
 		3D46627C233352290030A940 /* AViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AViewController.swift; sourceTree = "<group>"; };
+		3D56D0AC233609CD003D4E9B /* TPCountEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPCountEvent.h; sourceTree = "<group>"; };
+		3D56D0AD233609CD003D4E9B /* TPCountEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPCountEvent.m; sourceTree = "<group>"; };
 		3D5A515D2333131600673DE1 /* TPMediaLikedChangedEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPMediaLikedChangedEvent.h; sourceTree = "<group>"; };
 		3D5A515E2333131600673DE1 /* TPMediaLikedChangedEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPMediaLikedChangedEvent.m; sourceTree = "<group>"; };
 		3D81861323326BF800558785 /* TPTestEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPTestEvent.h; sourceTree = "<group>"; };
@@ -151,6 +154,8 @@
 				6003F594195388D20070C39A /* Supporting Files */,
 				3D81861323326BF800558785 /* TPTestEvent.h */,
 				3D81861423326BF800558785 /* TPTestEvent.m */,
+				3D56D0AC233609CD003D4E9B /* TPCountEvent.h */,
+				3D56D0AD233609CD003D4E9B /* TPCountEvent.m */,
 				3D5A515D2333131600673DE1 /* TPMediaLikedChangedEvent.h */,
 				3D5A515E2333131600673DE1 /* TPMediaLikedChangedEvent.m */,
 				3D46627C233352290030A940 /* AViewController.swift */,
@@ -390,6 +395,7 @@
 				6003F59E195388D20070C39A /* TPAppDelegate.m in Sources */,
 				6003F5A7195388D20070C39A /* TPViewController.m in Sources */,
 				3D5A515F2333131600673DE1 /* TPMediaLikedChangedEvent.m in Sources */,
+				3D56D0AE233609CD003D4E9B /* TPCountEvent.m in Sources */,
 				3D81861523326BF800558785 /* TPTestEvent.m in Sources */,
 				3D46627D233352290030A940 /* AViewController.swift in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,

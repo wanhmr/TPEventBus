@@ -37,27 +37,34 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mmz-A0-cEG">
-                                <rect key="frame" x="164.5" y="318.5" width="46" height="30"/>
-                                <state key="normal" title="Button"/>
-                                <connections>
-                                    <action selector="testAction:" destination="whP-gf-Uak" eventType="touchUpInside" id="ZpO-FQ-mFW"/>
-                                </connections>
-                            </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9gr-Ey-nuz">
+                                <rect key="frame" x="182" y="323" width="11" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="mmz-A0-cEG" firstAttribute="centerX" secondItem="TpU-gO-2f1" secondAttribute="centerX" id="oDM-Po-aoO"/>
-                            <constraint firstItem="mmz-A0-cEG" firstAttribute="centerY" secondItem="TpU-gO-2f1" secondAttribute="centerY" id="uFe-rt-IMR"/>
+                            <constraint firstItem="9gr-Ey-nuz" firstAttribute="centerX" secondItem="TpU-gO-2f1" secondAttribute="centerX" id="L2c-gU-Bd7"/>
+                            <constraint firstItem="9gr-Ey-nuz" firstAttribute="centerY" secondItem="TpU-gO-2f1" secondAttribute="centerY" id="X1W-Dq-pVy"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="jjK-iI-6qF">
-                        <barButtonItem key="rightBarButtonItem" title="Item" id="yLy-BS-Oz2">
+                        <barButtonItem key="leftBarButtonItem" title="Like" id="of6-7l-qIk">
+                            <connections>
+                                <action selector="likeAction:" destination="whP-gf-Uak" id="QfP-lf-0lV"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Next" id="yLy-BS-Oz2">
                             <connections>
                                 <segue destination="7gK-PX-Mkl" kind="show" id="mCO-IZ-lZU"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <outlet property="countLabel" destination="9gr-Ey-nuz" id="VBO-M5-Iz6"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="tc2-Qw-aMS" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -66,7 +73,7 @@
         <!--View Controller-->
         <scene sceneID="5Yd-A4-UFz">
             <objects>
-                <viewController id="7gK-PX-Mkl" customClass="TPViewController" sceneMemberID="viewController">
+                <viewController id="7gK-PX-Mkl" customClass="AViewController" customModule="TPEventBus_Example" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="ZU2-Gg-WoB"/>
                         <viewControllerLayoutGuide type="bottom" id="UK9-G5-kpW"/>
@@ -75,21 +82,35 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ekl-5g-WXR">
-                                <rect key="frame" x="164.5" y="318.5" width="46" height="30"/>
-                                <state key="normal" title="Button"/>
-                                <connections>
-                                    <action selector="testAction:" destination="7gK-PX-Mkl" eventType="touchUpInside" id="AcV-Tc-NbM"/>
-                                </connections>
-                            </button>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="30" translatesAutoresizingMaskIntoConstraints="NO" id="mqw-Nl-2XL">
+                                <rect key="frame" x="151" y="293.5" width="73" height="80.5"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2Yw-Ph-ywy">
+                                        <rect key="frame" x="31.5" y="0.0" width="10.5" height="20.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ekl-5g-WXR">
+                                        <rect key="frame" x="0.0" y="50.5" width="73" height="30"/>
+                                        <state key="normal" title="Add Count"/>
+                                        <connections>
+                                            <action selector="addAction:" destination="7gK-PX-Mkl" eventType="touchUpInside" id="bqq-yM-NgE"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="Ekl-5g-WXR" firstAttribute="centerX" secondItem="XdC-8X-bum" secondAttribute="centerX" id="TJl-ab-j2B"/>
-                            <constraint firstItem="Ekl-5g-WXR" firstAttribute="centerY" secondItem="XdC-8X-bum" secondAttribute="centerY" id="mOu-vL-2Qr"/>
+                            <constraint firstItem="mqw-Nl-2XL" firstAttribute="centerX" secondItem="XdC-8X-bum" secondAttribute="centerX" id="pVZ-KI-KeF"/>
+                            <constraint firstItem="mqw-Nl-2XL" firstAttribute="centerY" secondItem="XdC-8X-bum" secondAttribute="centerY" id="zyW-6a-t5U"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="bM4-1Z-GSb"/>
+                    <connections>
+                        <outlet property="countLabel" destination="2Yw-Ph-ywy" id="G9b-Cm-0SY"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="5Wn-PF-0Ju" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

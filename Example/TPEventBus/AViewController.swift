@@ -11,14 +11,19 @@ import TPEventBus
 
 class AViewController: UIViewController {
     
+    var count: Int = 0
+    
+    @IBOutlet weak var countLabel: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = UIColor.red
-        TPEventBus.shared.register(eventType: TPTestEvent.self, observer: self, selector: #selector(self.onTestEvent(event:)))
     }
     
-    @objc func onTestEvent(event: TPTestEvent) {
-        print("Swift event: \(event.name)")
+    @IBAction func addAction(_ sender: Any) {
+        count += 1
+        self.countLabel.text = "\(count)"
+        let event = TPCountEvent.init(count: count)
+        TPEventBus.shared.post(event: event, object: self)
     }
     
 }

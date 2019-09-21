@@ -35,7 +35,7 @@ typedef void(^TPEventSubscriptionBlock)(EventType event, _Nullable id object);
 
 - (TPEventSubscriberMaker<EventType> *(^)(NSOperationQueue * _Nullable))onQueue;
 - (TPEventSubscriberMaker<EventType> *(^)(_Nullable id))forObject;
-- (nullable id<TPEventToken>)onNext:(TPEventSubscriptionBlock)block;
+- (id<TPEventToken>)onNext:(TPEventSubscriptionBlock)block;
 
 @end
 

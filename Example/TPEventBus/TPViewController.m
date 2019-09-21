@@ -10,9 +10,12 @@
 #import <TPEventBus/TPEventBus.h>
 #import "TPTestEvent.h"
 #import "TPMediaLikedChangedEvent.h"
+#import "TPCountEvent.h"
 #import "TPEventBus_Example-Swift.h"
 
 @interface TPViewController ()
+
+@property (weak, nonatomic) IBOutlet UILabel *countLabel;
 
 @end
 
@@ -22,16 +25,18 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-//    AViewController *aVC = [AViewController new];
-//    aVC.view.frame = CGRectMake(0, 0, self.view.frame.size.width, 100);
-//    [self.view addSubview:aVC.view];
-//    [self addChildViewController:aVC];
+    __weak __typeof(self)weakSelf = self;
+    [[TPEventSubscriber(TPCountEvent).onQueue([NSOperationQueue mainQueue]) onNext:^(TPCountEvent * _Nonnull event, id  _Nullable object) {
+        __strong __typeof(weakSelf)strongSelf = weakSelf;
+        strongSelf.countLabel.text = @(event.count).stringValue;
+    }] disposedByObject:self];
 }
 
-- (IBAction)testAction:(id)sender {
+- (IBAction)likeAction:(id)sender {
     TPMediaLikedChangedEvent *event = [[TPMediaLikedChangedEvent alloc] initWithLiked:@(YES)];
     [[TPEventBus sharedBus] postEvent:event object:self];
 //    [[TPEventBus sharedBus] postEvent:event];
 }
+
 
 @end
