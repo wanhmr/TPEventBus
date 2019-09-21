@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-  A tiny EventBus for iOS.
+  EventBus is a publish/subscribe event bus for iOS, inspired by EventBus and QTEventBus.
                        DESC
 
   s.homepage         = 'https://github.com/wanhmr/TPEventBus'
