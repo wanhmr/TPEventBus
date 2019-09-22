@@ -16,10 +16,10 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
-    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:) object:nil queue:[NSOperationQueue new]];
-    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:object:)];
-    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class observer:self selector:@selector(onTestEvent:)];
-    [[TPEventBus sharedBus] registerEventType:TPMediaLikedChangedEvent.class observer:self selector:@selector(onMediaLikedChangedEvent:)];
+    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class subscriber:self selector:@selector(onTestEvent:object:) object:nil queue:[NSOperationQueue new]];
+    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class subscriber:self selector:@selector(onTestEvent:object:)];
+    [[TPEventBus sharedBus] registerEventType:TPTestEvent.class subscriber:self selector:@selector(onTestEvent:)];
+    [[TPEventBus sharedBus] registerEventType:TPMediaLikedChangedEvent.class subscriber:self selector:@selector(onMediaLikedChangedEvent:)];
     [[TPEventSubscribe(TPMediaLikedChangedEvent).onQueue([NSOperationQueue new]).forObject(nil) onEvent:^(TPMediaLikedChangedEvent * _Nonnull event, id  _Nullable object) {
         NSLog(@"Block Type >>> liked: %@, object: %@, thread: %@", event.liked, object, [NSThread currentThread]);
     }] disposedByObject:self];

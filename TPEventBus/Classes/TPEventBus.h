@@ -18,11 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol TPEventToken <NSObject>
 
-@property (nonatomic, strong, readonly) Class eventType;
-@property (nullable, nonatomic, weak, readonly) id object;
-
-- (void)executeWithEvent:(id<TPEvent>)event object:(nullable id)object;
-
 - (void)dispose;
 
 - (void)disposedByObject:(id)object NS_SWIFT_NAME(disposed(by:));
@@ -46,18 +41,18 @@ typedef void(^TPEventSubscriptionBlock)(EventType event, _Nullable id object);
 @property (class, strong, readonly) TPEventBus *sharedBus NS_SWIFT_NAME(shared);
 
 - (void)registerEventType:(Class)eventType
-                 observer:(id)observer
+               subscriber:(id)subscriber
                  selector:(SEL)selector
                    object:(nullable id)object
-                    queue:(nullable NSOperationQueue *)queue NS_SWIFT_NAME(register(eventType:observer:selector:object:queue:));
+                    queue:(nullable NSOperationQueue *)queue NS_SWIFT_NAME(register(eventType:subscriber:selector:object:queue:));
 
-- (void)registerEventType:(Class)eventType observer:(id)observer selector:(SEL)selector NS_SWIFT_NAME(register(eventType:observer:selector:));
+- (void)registerEventType:(Class)eventType subscriber:(id)subscriber selector:(SEL)selector NS_SWIFT_NAME(register(eventType:subscriber:selector:));
 
-- (void)unregisterEventType:(Class)eventType observer:(id)observer object:(nullable id)object NS_SWIFT_NAME(unregister(eventType:observer:object:));
+- (void)unregisterEventType:(Class)eventType subscriber:(id)subscriber object:(nullable id)object NS_SWIFT_NAME(unregister(eventType:subscriber:object:));
 
-- (void)unregisterEventType:(Class)eventType observer:(id)observer NS_SWIFT_NAME(unregister(eventType:observer:));
+- (void)unregisterEventType:(Class)eventType subscriber:(id)subscriber NS_SWIFT_NAME(unregister(eventType:subscriber:));
 
-- (void)unregisterObserver:(id)observer NS_SWIFT_NAME(unregister(observer:));
+- (void)unregisterSubscriber:(id)subscriber NS_SWIFT_NAME(unregister(subscriber:));
 
 - (void)postEvent:(id<TPEvent>)event object:(nullable id)object NS_SWIFT_NAME(post(event:object:));
 
