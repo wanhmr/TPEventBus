@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface TPEventSubscriberMaker<__covariant EventType: id<TPEvent>> : NSObject
+@interface TPEventSubscriberMaker<EventType: id<TPEvent>> : NSObject
 
 typedef void(^TPEventSubscriptionBlock)(EventType event, _Nullable id object);
 
@@ -38,7 +38,7 @@ typedef void(^TPEventSubscriptionBlock)(EventType event, _Nullable id object);
 
 @end
 
-@interface TPEventBus<__covariant EventType: id<TPEvent>> : NSObject
+@interface TPEventBus<EventType: id<TPEvent>> : NSObject
 
 @property (class, strong, readonly) TPEventBus<EventType> *sharedBus NS_SWIFT_NAME(shared);
 
