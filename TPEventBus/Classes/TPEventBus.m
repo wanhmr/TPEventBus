@@ -365,7 +365,7 @@ static inline NSString *TPIdentityFromObject(id object) {
     };
 }
 
-- (id<TPEventToken>)onEvent:(void (^)(id, id))block {
+- (id<TPEventToken>)onEvent:(TPEventSubscriptionBlock)block {
     TPAnonymousEventSubscription *subscription =
     [[TPAnonymousEventSubscription alloc] initWithEventType:self.eventType block:block object:self.object queue:self.queue delegate:self.eventBus];
     [self.eventBus addSubscription:subscription];
