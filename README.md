@@ -39,10 +39,10 @@ Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
 
    ```Swift
    // Register
-	TPEventBus.shared.register(eventType: TPCountEvent.self, subscriber: self, selector: #selector(onCountEvent(event:object:)))
+	TPEventBus<TPCountEvent>.shared.register(eventType: TPCountEvent.self, subscriber: self, selector: #selector(onCountEvent(event:object:)))
     
     // Unregister
-	TPEventBus.shared.unregister(eventType: TPCountEvent.self, subscriber: self)
+	TPEventBus<TPCountEvent>.shared.unregister(eventType: TPCountEvent.self, subscriber: self)
     ```
 
 3. Post events:
@@ -56,7 +56,7 @@ Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
 
 
 ```Swift
-TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onEvent { [weak self] (event, object) in
+TPEventBus<TPCountEvent>.shared.subscribe(eventType: TPCountEvent.self).onQueue(OperationQueue.main).onEvent { [weak self] (event, object) in
     guard let self = self else {
         return
     }
