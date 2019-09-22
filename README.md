@@ -7,12 +7,10 @@
 
 TPEventBus is a publish/subscribe event bus for iOS, inspired by [EventBus](https://github.com/greenrobot/EventBus) and [QTEventBus](https://github.com/LeoMobileDeveloper/QTEventBus).
 
-![Event Bus](http://i.imgur.com/BNtzhB7.png)
-source of the picture: [老司机教你 “飙” EventBus 3](https://segmentfault.com/a/1190000005089229)
+<img src="Static/EventBus-Publish-Subscribe.png"></img>
+Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
 
 ## EventBus in 3 steps
-
-### Swift
 
 1. Define events:
 
@@ -41,10 +39,10 @@ source of the picture: [老司机教你 “飙” EventBus 3](https://segmentfau
 
    ```Swift
    // Register
-	TPEventBus.shared.register(eventType: TPCountEvent.self, observer: self, selector: #selector(onCountEvent(event:object:)))
+	TPEventBus.shared.register(eventType: TPCountEvent.self, subscriber: self, selector: #selector(onCountEvent(event:object:)))
     
     // Unregister
-	TPEventBus.shared.unregister(eventType: TPCountEvent.self, observer: self)
+	TPEventBus.shared.unregister(eventType: TPCountEvent.self, subscriber: self)
     ```
 
 3. Post events:
@@ -53,107 +51,9 @@ source of the picture: [老司机教你 “飙” EventBus 3](https://segmentfau
 	let event = TPCountEvent.init(count: count)
 	TPEventBus.shared.post(event: event, object: self)
     ```
-
-### Objective-C
-
-1. Define events:
-
-    ```Objective-C
-	@interface TPCountEvent : NSObject <TPEvent>
-
-	@property (nonatomic, assign, readonly) NSInteger count;
-
-	- (instancetype)initWithCount:(NSInteger)count;
-
-	@end
-    ```
-
-2. Prepare subscribers:
-    
-    Subscribers implement event handling methods that will be called when an event is received.
-    
-    ```Objective-C
-    - (void)onCountEvent:(TPCountEvent *)event object:(id)object {
-    	// do something
-    }
-    
-    - (void)onCountEvent:(TPCountEvent *)event {
-		// do something
-	}
-	```
-	Register and unregister your subscriber.
-    
-	Notice: **When the observer is released, it will be automatically unregistered.**
-
-   ```Objective-C
-   // Register
-    [[TPEventBus sharedBus] registerEventType:TPCountEvent.class observer:self selector:@selector(onCountEvent:object:) object:nil queue:[NSOperationQueue new]];
-    [[TPEventBus sharedBus] registerEventType:TPCountEvent.class observer:self selector:@selector(onCountEvent:object:)];
-    [[TPEventBus sharedBus] registerEventType:TPCountEvent.class observer:self selector:@selector(onCountEvent:)];
-    
-    // Unregister
-	[[TPEventBus sharedBus] unregisterObserver:self];
-	[[TPEventBus sharedBus] unregisterEventType: TPCountEvent.class observer:self object:nil];
-	```
-
-3. Post events:
-
-   ```Objective-C
-	TPCountEvent *event = [[TPCountEvent alloc] initWithCount:count];
-    [[TPEventBus sharedBus] postEvent:event object:self];
-    ```
-    
-
-### Objective-C
-
-1. Define events:
-
-    ```Objective-C
-	@interface TPCountEvent : NSObject <TPEvent>
-
-	@property (nonatomic, assign, readonly) NSInteger count;
-
-	- (instancetype)initWithCount:(NSInteger)count;
-
-	@end
-    ```
-
-2. Prepare subscribers:
-    
-    Subscribers implement event handling methods that will be called when an event is received.
-    
-    ```Objective-C
-    - (void)onCountEvent:(TPCountEvent *)event object:(id)object {
-    	// do something
-    }
-    
-    - (void)onCountEvent:(TPCountEvent *)event {
-		// do something
-	}
-    ```
-    Register and unregister your subscriber.
-
-   ```Objective-C
-   // Register
-    [[TPEventBus sharedBus] registerEventType:TPCountEvent.class observer:self selector:@selector(onCountEvent:object:) object:nil queue:[NSOperationQueue new]];
-    [[TPEventBus sharedBus] registerEventType:TPCountEvent.class observer:self selector:@selector(onCountEvent:object:)];
-    [[TPEventBus sharedBus] registerEventType:TPCountEvent.class observer:self selector:@selector(onCountEvent:)];
-    
-    // Unregister
-	[[TPEventBus sharedBus] unregisterObserver:self];
-	[[TPEventBus sharedBus] unregisterEventType: TPCountEvent.class observer:self object:nil];
-    ```
-
-3. Post events:
-
-   ```Objective-C
-	TPCountEvent *event = [[TPCountEvent alloc] initWithCount:count];
-    [[TPEventBus sharedBus] postEvent:event object:self];
-	```
     
 ## Convenience
 
-### Swift
 
 ```Swift
 TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onEvent { [weak self] (event, object) in
@@ -165,14 +65,6 @@ TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onEvent 
 }.disposed(by: self)
 ```
 	
-### Objective-C
-
-```Objective-C
-[[TPEventSubscribe(TPCountEvent).onQueue([NSOperationQueue new]).forObject(nil) onEvent:^(TPCountEvent * _Nonnull event, id  _Nullable object) {
-	// do something
-}] disposedByObject:self];
-```
-
 ## Example
 
 To run the example project, clone the repo, and run `pod install` from the Example directory first.
