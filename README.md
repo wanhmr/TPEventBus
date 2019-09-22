@@ -35,7 +35,7 @@ Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
     ```
     Register and unregister your subscriber. 
     
-    Notice: **When the observer is released, it will be automatically unregistered.**
+    Notice: **When the subscriber is released, it will be automatically unregistered.**
 
    ```Swift
    // Register
