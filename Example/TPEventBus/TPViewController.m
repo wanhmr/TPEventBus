@@ -26,7 +26,7 @@
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     __weak __typeof(self)weakSelf = self;
-    [[TPEventSubscribe(TPCountEvent).onQueue([NSOperationQueue mainQueue]) onEvent:^(TPCountEvent * _Nonnull event, id  _Nullable object) {
+    [[TPEventBusSubscribeEventType(TPCountEvent).onQueue([NSOperationQueue mainQueue]) onEvent:^(TPCountEvent * _Nonnull event, id  _Nullable object) {
         __strong __typeof(weakSelf)strongSelf = weakSelf;
         strongSelf.countLabel.text = @(event.count).stringValue;
     }] disposedByObject:self];

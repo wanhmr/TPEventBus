@@ -21,7 +21,7 @@ class AViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        TPEventSubscriber<TPCountEvent>.subscribe(eventType: TPCountEvent.self).onEvent { [weak self] (event, object) in
+        TPEventBus<TPCountEvent>.shared.subscribe(eventType: TPCountEvent.self).onQueue(OperationQueue.main).onEvent { [weak self] (event, object) in
             guard let self = self else {
                 return
             }
@@ -29,7 +29,7 @@ class AViewController: UIViewController {
             self.countLabel.text = "\(self.count)"
         }.disposed(by: self)
         
-        TPEventBus.shared.register(eventType: TPCountEvent.self, subscriber:self, selector: #selector(onCountEvent(event:object:)))
+        TPEventBus<TPCountEvent>.shared.register(eventType: TPCountEvent.self, subscriber:self, selector: #selector(onCountEvent(event:object:)))
 //        TPEventBus.shared.unregister(eventType: TPCountEvent.self, observer: self)
     }
     

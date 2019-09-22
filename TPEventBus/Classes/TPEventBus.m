@@ -326,7 +326,7 @@ static inline NSString *TPIdentityFromObject(id object) {
 
 @end
 
-@interface TPEventSubscriber ()
+@interface TPEventSubscriberMaker ()
 
 @property (nonatomic, weak, readonly) TPEventBus *eventBus;
 @property (nonatomic, strong, readonly) Class eventType;
@@ -336,7 +336,7 @@ static inline NSString *TPIdentityFromObject(id object) {
 
 @end
 
-@implementation TPEventSubscriber
+@implementation TPEventSubscriberMaker
 
 - (instancetype)initWithEventBus:(TPEventBus *)eventBus eventType:(Class)eventType {
     self = [super init];
@@ -347,21 +347,26 @@ static inline NSString *TPIdentityFromObject(id object) {
     return self;
 }
 
-+ (TPEventSubscriber *)subscribeEventType:(Class)eventType {
-    return [[TPEventSubscriber alloc] initWithEventBus:[TPEventBus sharedBus] eventType:eventType];
+- (TPEventSubscriberMaker<id<TPEvent>> *)onQueue:(NSOperationQueue *)queue {
+    self.queue = queue;
+    return self;
 }
 
-- (TPEventSubscriber<id> * (^)(NSOperationQueue *))onQueue {
-    return ^ TPEventSubscriber * (NSOperationQueue *queue) {
+- (TPEventSubscriberMaker<id<TPEvent>> *)forObject:(id)object {
+    self.object = object;
+    return self;
+}
+
+- (TPEventSubscriberMaker<id<TPEvent>> * (^)(NSOperationQueue *))onQueue {
+    return ^ TPEventSubscriberMaker * (NSOperationQueue *queue) {
         self.queue = queue;
         return self;
     };
 }
 
-- (TPEventSubscriber<id> * (^)(id))forObject {
-    return ^ TPEventSubscriber * (id object) {
-        self.object = object;
-        return self;
+- (TPEventSubscriberMaker<id<TPEvent>> * (^)(id))forObject {
+    return ^ TPEventSubscriberMaker * (id object) {
+        return [self forObject:object];
     };
 }
 
@@ -400,6 +405,16 @@ static inline NSString *TPIdentityFromObject(id object) {
         eventBus = [TPEventBus new];
     });
     return eventBus;
+}
+
+- (TPEventSubscriberMaker<id<TPEvent>> *)subscribeEventType:(Class)eventType {
+    return [[TPEventSubscriberMaker alloc] initWithEventBus:self eventType:eventType];
+}
+
+- (TPEventSubscriberMaker<id<TPEvent>> * (^)(Class))subscribeEventType {
+    return ^ TPEventSubscriberMaker * (Class eventType) {
+        return [self subscribeEventType:eventType];
+    };
 }
 
 - (void)registerEventType:(Class)eventType
