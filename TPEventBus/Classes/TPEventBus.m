@@ -127,7 +127,7 @@ static inline NSString *TPIdentityFromObject(id object) {
 #pragma mark - Hash
 @property (nonatomic, strong, readonly) NSString *eventTypeID;
 /**
- 这个是关键，因为 subscriber 是弱引用，subscriber 清除 AssociatedObject 的时候，已经是 nil，从而导致 TPEventBusObservingContext 的 hash 值改变。
+ 这个是关键，因为 subscriber 是弱引用，subscriber 清除 AssociatedObject 的时候，已经是 nil，从而导致 TPEventSubscription 的 hash 值改变。
  因此我们需要保存 subscriber 的 snapshot 也就是 subscriberID。
  */
 @property (nonatomic, strong, readonly) NSString *subscriberID;
