@@ -25,7 +25,7 @@ Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
 	```
 
 2. Prepare subscribers:
-    
+  
     Subscribers implement event handling methods that will be called when an event is received.
     
     ```Swift
@@ -39,19 +39,24 @@ Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
 
    ```Swift
    // Register
+   ```
+
 	TPEventBus<TPCountEvent>.shared.register(eventType: TPCountEvent.self, subscriber: self, selector: #selector(onCountEvent(event:object:)))
-    
-    // Unregister
+	
+	// Unregister
 	TPEventBus<TPCountEvent>.shared.unregister(eventType: TPCountEvent.self, subscriber: self)
-    ```
+	```
 
 3. Post events:
 
    ```Swift
+   
+   ```
+
 	let event = TPCountEvent.init(count: count)
 	TPEventBus.shared.post(event: event, object: self)
-    ```
-    
+	```
+
 ## Convenience
 
 
@@ -62,9 +67,9 @@ TPEventBus<TPCountEvent>.shared.subscribe(eventType: TPCountEvent.self).onQueue(
     }
     
     // do something
-}.disposed(by: self)
+}.disposed(by: self.tp_eventTokenBag)
 ```
-	
+
 ## Example
 
 To run the example project, clone the repo, and run `pod install` from the Example directory first.
