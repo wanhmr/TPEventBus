@@ -27,7 +27,7 @@ class AViewController: UIViewController {
             }
             
             self.countLabel.text = "\(self.count)"
-        }.disposed(by: self)
+        }.disposed(by: self.tp_eventTokenBag)
         
         TPEventBus<TPCountEvent>.shared.register(eventType: TPCountEvent.self, subscriber:self, selector: #selector(onCountEvent(event:object:)))
 //        TPEventBus<TPCountEvent>.shared.unregister(eventType: TPCountEvent.self, subscriber: self)

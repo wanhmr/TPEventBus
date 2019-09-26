@@ -29,7 +29,7 @@
     [[TPEventBusSubscribeEventType(TPCountEvent).onQueue([NSOperationQueue mainQueue]) onEvent:^(TPCountEvent * _Nonnull event, id  _Nullable object) {
         __strong __typeof(weakSelf)strongSelf = weakSelf;
         strongSelf.countLabel.text = @(event.count).stringValue;
-    }] disposedByObject:self];
+    }] disposedByBag:self.tp_eventTokenBag];
 }
 
 - (IBAction)likeAction:(id)sender {

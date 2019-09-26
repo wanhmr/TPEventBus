@@ -16,17 +16,33 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class TPEventTokenBag;
+
 @protocol TPEventToken <NSObject>
 
 - (void)dispose;
 
-- (void)disposedByObject:(id)object NS_SWIFT_NAME(disposed(by:));
+- (void)disposedByBag:(TPEventTokenBag *)bag NS_SWIFT_NAME(disposed(by:));
+
+@end
+
+@interface TPEventTokenBag<EventToken: id<TPEventToken>> : NSObject
+
+- (NSArray<EventToken> *)allTokens;
+
+- (void)addToken:(EventToken)token;
+
+@end
+
+@interface NSObject (TPEventBus)
+
+@property (nonatomic, strong, readonly) TPEventTokenBag<id<TPEventToken>> *tp_eventTokenBag;
 
 @end
 
 @interface TPEventSubscriberMaker<EventType: id<TPEvent>> : NSObject
 
-typedef void(^TPEventSubscriptionBlock)(EventType event, _Nullable id object);
+typedef void(^TPEventSubscriberBlock)(EventType event, _Nullable id object);
 
 - (TPEventSubscriberMaker<EventType> *)onQueue:(nullable NSOperationQueue *)queue;
 - (TPEventSubscriberMaker<EventType> *)forObject:(nullable id)object;
@@ -34,7 +50,7 @@ typedef void(^TPEventSubscriptionBlock)(EventType event, _Nullable id object);
 - (TPEventSubscriberMaker<EventType> *(^)(NSOperationQueue * _Nullable))onQueue;
 - (TPEventSubscriberMaker<EventType> *(^)(_Nullable id))forObject;
 
-- (id<TPEventToken>)onEvent:(TPEventSubscriptionBlock)block;
+- (id<TPEventToken>)onEvent:(TPEventSubscriberBlock)block;
 
 @end
 

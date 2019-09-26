@@ -13,11 +13,15 @@ static inline NSString *TPIdentityFromObject(id object) {
     return @((NSUInteger)object).stringValue;
 }
 
+static inline NSString *TPKeyFromEventType(Class eventType) {
+    return NSStringFromClass(eventType);
+}
+
 @protocol TPEventSubscription;
 
 @protocol TPEventSubscriptionDelegate <NSObject>
 
-- (void)eventSubscriptionWantsDispose:(id<TPEventSubscription>)subscription;
+- (void)eventSubscriptionWantsDispose:(id<TPEventSubscription>)subscription subscriberID:(nullable NSString *)subscriberID;
 
 @end
 
@@ -28,34 +32,26 @@ static inline NSString *TPIdentityFromObject(id object) {
 
 @property (nonatomic, weak, readonly) id<TPEventSubscriptionDelegate> delegate;
 
-- (void)executeWithEvent:(id<TPEvent>)event object:(nullable id)object;
+- (void)invokeWithEvent:(id<TPEvent>)event object:(nullable id)object;
 
 @end
 
 @interface TPEventBus () <TPEventSubscriptionDelegate>
 
-- (void)removeSubscription:(id<TPEventSubscription>)subscription;
+- (void)addSubscription:(id<TPEventSubscription>)subscription subscriberID:(nullable NSString *)subscriberID;
 
-- (void)addSubscription:(id<TPEventSubscription>)subscription;
-
-@end
-
-@interface TPEventSubscriptionBag : NSObject
-
-- (NSArray<id<TPEventSubscription>> *)allSubscriptions;
-
-- (void)addSubscription:(id<TPEventSubscription>)subscription;
+- (void)removeSubscription:(id<TPEventSubscription>)subscription subscriberID:(nullable NSString *)subscriberID;
 
 @end
 
-@interface TPEventSubscriptionBag () {
-    NSHashTable *_subscriptions;
+@interface TPEventTokenBag () {
+    NSHashTable *_tokens;
     NSLock *_lock;
 }
 
 @end
 
-@implementation TPEventSubscriptionBag
+@implementation TPEventTokenBag
 
 - (void)dealloc {
     [self dispose];
@@ -65,48 +61,42 @@ static inline NSString *TPIdentityFromObject(id object) {
 {
     self = [super init];
     if (self) {
-        _subscriptions = [[NSHashTable alloc] initWithOptions:NSPointerFunctionsWeakMemory capacity:1];
+        _tokens = [[NSHashTable alloc] initWithOptions:NSPointerFunctionsWeakMemory capacity:1];
         _lock = [NSLock new];
     }
     return self;
 }
 
-- (NSArray<id<TPEventSubscription>> *)allSubscriptions {
-    return _subscriptions.allObjects;
+- (NSArray<id> *)allTokens {
+    return _tokens.allObjects;
 }
 
-- (void)addSubscription:(id<TPEventSubscription>)subscription {
+- (void)addToken:(id<TPEventToken>)token {
     [_lock lock];
-    [_subscriptions addObject:subscription];
+    [_tokens addObject:token];
     [_lock unlock];
 }
 
 - (void)dispose {
-    NSArray *subscriptions = _subscriptions.allObjects;
+    NSArray *tokens = _tokens.allObjects;
     
     [_lock lock];
-    [_subscriptions removeAllObjects];
+    [_tokens removeAllObjects];
     [_lock unlock];
     
-    [subscriptions enumerateObjectsUsingBlock:^(id<TPEventSubscription> obj, NSUInteger idx, BOOL *stop) {
+    [tokens enumerateObjectsUsingBlock:^(id<TPEventSubscription> obj, NSUInteger idx, BOOL *stop) {
         [obj dispose];
     }];
 }
 
 @end
 
-@interface NSObject (TPEventBus)
-
-@property (nonatomic, strong, readonly) TPEventSubscriptionBag *tp_eventSubscriptionBag;
-
-@end
-
 @implementation NSObject (TPEventBus)
 
-- (TPEventSubscriptionBag *)tp_eventSubscriptionBag {
-    TPEventSubscriptionBag *bag = objc_getAssociatedObject(self, _cmd);
+- (TPEventTokenBag<id<TPEventToken>> *)tp_eventTokenBag {
+    TPEventTokenBag *bag = objc_getAssociatedObject(self, _cmd);
     if (!bag) {
-        bag = [[TPEventSubscriptionBag alloc] init];
+        bag = [[TPEventTokenBag alloc] init];
         objc_setAssociatedObject(self, _cmd, bag, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return bag;
@@ -114,7 +104,7 @@ static inline NSString *TPIdentityFromObject(id object) {
 
 @end
 
-@interface TPConcreteEventSubscription : NSObject <TPEventSubscription>
+@interface TPTargetActionEventSubscription : NSObject <TPEventSubscription>
 
 @property (nonatomic, strong, readonly) Class eventType;
 @property (nonatomic, weak, readonly) id subscriber;
@@ -136,7 +126,7 @@ static inline NSString *TPIdentityFromObject(id object) {
 
 @end
 
-@implementation TPConcreteEventSubscription
+@implementation TPTargetActionEventSubscription
 
 - (instancetype)initWithEventType:(Class)eventType
                        subscriber:(id)subscriber
@@ -172,12 +162,12 @@ static inline NSString *TPIdentityFromObject(id object) {
     [self.queue hash];
 }
 
-- (BOOL)isEqual:(TPConcreteEventSubscription *)other {
+- (BOOL)isEqual:(TPTargetActionEventSubscription *)other {
     if (self == other) {
         return YES;
     }
     
-    if (![other isKindOfClass:TPConcreteEventSubscription.class]) {
+    if (![other isKindOfClass:TPTargetActionEventSubscription.class]) {
         return NO;
     }
     
@@ -189,17 +179,17 @@ static inline NSString *TPIdentityFromObject(id object) {
     (self.queue == other.queue || [self.queue isEqual:other.queue]);
 }
     
-- (void)executeWithEvent:(id<TPEvent>)event object:(nullable id)object {
+- (void)invokeWithEvent:(id<TPEvent>)event object:(nullable id)object {
     if (self.object) {
         if (self.object == object) {
-            [self _executeWithEvent:event object:object];
+            [self _invokeWithEvent:event object:object];
         }
     } else {
-        [self _executeWithEvent:event object:object];
+        [self _invokeWithEvent:event object:object];
     }
 }
 
-- (void)_executeWithEvent:(id<TPEvent>)event object:(nullable id)object {
+- (void)_invokeWithEvent:(id<TPEvent>)event object:(nullable id)object {
     id subscriber = self.subscriber;
     SEL selector = self.selector;
     NSOperationQueue *queue = self.queue;
@@ -223,11 +213,11 @@ static inline NSString *TPIdentityFromObject(id object) {
 }
 
 - (void)dispose {
-    [self.delegate eventSubscriptionWantsDispose:self];
+    [self.delegate eventSubscriptionWantsDispose:self subscriberID:self.subscriberID];
 }
 
-- (void)disposedByObject:(id)object {
-    [[object tp_eventSubscriptionBag] addSubscription:self];
+- (void)disposedByBag:(TPEventTokenBag *)bag {
+    [bag addToken:self];
 }
 
 @end
@@ -237,8 +227,8 @@ static inline NSString *TPIdentityFromObject(id object) {
 @property (nonatomic, strong, readonly) Class eventType;
 @property (nullable, nonatomic, strong) NSOperationQueue *queue;
 @property (nullable, nonatomic, weak) id object;
-@property (nonatomic, copy) TPEventSubscriptionBlock block;
-@property (nullable, nonatomic, weak) TPEventSubscriptionBag *disposableBag;
+@property (nonatomic, copy) TPEventSubscriberBlock block;
+@property (nullable, nonatomic, weak) TPEventTokenBag *disposableBag;
 
 @property (nonatomic, weak, readonly) id<TPEventSubscriptionDelegate> delegate;
 
@@ -251,7 +241,7 @@ static inline NSString *TPIdentityFromObject(id object) {
 @implementation TPAnonymousEventSubscription
 
 - (instancetype)initWithEventType:(Class)eventType
-                            block:(TPEventSubscriptionBlock)block
+                            block:(TPEventSubscriberBlock)block
                            object:(id)object
                             queue:(NSOperationQueue *)queue
                          delegate:(id<TPEventSubscriptionDelegate>)delegate {
@@ -295,17 +285,17 @@ static inline NSString *TPIdentityFromObject(id object) {
     (self.block == other.block || [self.block isEqual:other.block]);
 }
     
-- (void)executeWithEvent:(id<TPEvent>)event object:(id)object {
+- (void)invokeWithEvent:(id<TPEvent>)event object:(id)object {
     if (self.object) {
         if (self.object == object) {
-            [self _executeWithEvent:event object:object];
+            [self _invokeWithEvent:event object:object];
         }
     } else {
-        [self _executeWithEvent:event object:object];
+        [self _invokeWithEvent:event object:object];
     }
 }
 
-- (void)_executeWithEvent:(id<TPEvent>)event object:(nullable id)object {
+- (void)_invokeWithEvent:(id<TPEvent>)event object:(nullable id)object {
     NSOperationQueue *queue = self.queue;
     if (queue) {
         [queue addOperationWithBlock:^{
@@ -317,11 +307,11 @@ static inline NSString *TPIdentityFromObject(id object) {
 }
 
 - (void)dispose {
-    [self.delegate eventSubscriptionWantsDispose:self];
+    [self.delegate eventSubscriptionWantsDispose:self subscriberID:nil];
 }
 
-- (void)disposedByObject:(id)object {
-    [[object tp_eventSubscriptionBag] addSubscription:self];
+- (void)disposedByBag:(TPEventTokenBag *)bag {
+    [bag addToken:self];
 }
 
 @end
@@ -370,10 +360,10 @@ static inline NSString *TPIdentityFromObject(id object) {
     };
 }
 
-- (id<TPEventToken>)onEvent:(TPEventSubscriptionBlock)block {
+- (id<TPEventToken>)onEvent:(TPEventSubscriberBlock)block {
     TPAnonymousEventSubscription *subscription =
     [[TPAnonymousEventSubscription alloc] initWithEventType:self.eventType block:block object:self.object queue:self.queue delegate:self.eventBus];
-    [self.eventBus addSubscription:subscription];
+    [self.eventBus addSubscription:subscription subscriberID:nil];
     return subscription;
 }
 
@@ -383,7 +373,8 @@ static inline NSString *TPIdentityFromObject(id object) {
 @interface TPEventBus ()
 
 @property (nonatomic, strong, readonly) NSLock *lock;
-@property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSMutableSet<id<TPEventSubscription>> *> *subscriptions;
+@property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSMutableSet<id<TPEventSubscription>> *> *subscriptionsByEventType;
+@property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSMutableSet<id<TPEventSubscription>> *> *subscriptionsBySubscriber;
 
 @end
 
@@ -393,7 +384,8 @@ static inline NSString *TPIdentityFromObject(id object) {
     self = [super init];
     if (self) {
         _lock = [NSLock new];
-        _subscriptions = [NSMutableDictionary new];
+        _subscriptionsByEventType = [NSMutableDictionary new];
+        _subscriptionsBySubscriber = [NSMutableDictionary new];
     }
     return self;
 }
@@ -426,15 +418,15 @@ static inline NSString *TPIdentityFromObject(id object) {
     NSParameterAssert(subscriber);
     NSParameterAssert(selector);
     
-    TPConcreteEventSubscription *subscription =
-    [[TPConcreteEventSubscription alloc] initWithEventType:eventType
+    TPTargetActionEventSubscription *subscription =
+    [[TPTargetActionEventSubscription alloc] initWithEventType:eventType
                                                 subscriber:subscriber
                                                   selector:selector
                                                     object:object
                                                      queue:queue
                                                   delegate:self];
-    [self addSubscription:subscription];
-    [subscription disposedByObject:subscriber];
+    [self addSubscription:subscription subscriberID:subscription.subscriberID];
+    [[subscriber tp_eventTokenBag] addToken:subscription];
 }
 
 - (void)registerEventType:(Class)eventType subscriber:(id)subscriber selector:(SEL)selector {
@@ -442,7 +434,7 @@ static inline NSString *TPIdentityFromObject(id object) {
 }
 
 - (void)unregisterEventType:(Class)eventType subscriber:(id)subscriber object:(id)object {
-    NSArray<id<TPEventSubscription>> *subscriptions = [subscriber tp_eventSubscriptionBag].allSubscriptions;
+    NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionsForSubscriberID:TPIdentityFromObject(subscriber)];
     [subscriptions enumerateObjectsUsingBlock:^(id<TPEventSubscription> _Nonnull subscription, NSUInteger idx, BOOL * _Nonnull stop) {
         if (subscription.eventType == eventType) {
             if (object) {
@@ -461,16 +453,16 @@ static inline NSString *TPIdentityFromObject(id object) {
 }
 
 - (void)unregisterSubscriber:(id)subscriber {
-    NSArray<id<TPEventSubscription>> *subscriptions = [subscriber tp_eventSubscriptionBag].allSubscriptions;
+    NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionsForSubscriberID:TPIdentityFromObject(subscriber)];
     [subscriptions enumerateObjectsUsingBlock:^(id<TPEventSubscription> _Nonnull subscription, NSUInteger idx, BOOL * _Nonnull stop) {
         [subscription dispose];
     }];
 }
 
 - (void)postEvent:(id<TPEvent>)event object:(id)object {
-    NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionForEventType:event.class];
+    NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionsForEventType:event.class];
     [subscriptions enumerateObjectsUsingBlock:^(id<TPEventSubscription> _Nonnull subscription, NSUInteger idx, BOOL * _Nonnull stop) {
-        [subscription executeWithEvent:event object:object];
+        [subscription invokeWithEvent:event object:object];
     }];
 }
 
@@ -480,53 +472,73 @@ static inline NSString *TPIdentityFromObject(id object) {
 
 #pragma mark - TPEventSubscriptionDelegate
 
-- (void)eventSubscriptionWantsDispose:(id<TPEventSubscription>)subscription {
-    [self removeSubscription:subscription];
+- (void)eventSubscriptionWantsDispose:(id<TPEventSubscription>)subscription subscriberID:(nullable NSString *)subscriberID {
+    [self removeSubscription:subscription subscriberID:subscriberID];
 }
 
 #pragma mark - Private
 
-- (NSString *)keyFromEventType:(Class)eventType {
-    return NSStringFromClass(eventType);
-}
-
 - (NSMutableSet<id<TPEventSubscription>> *)hashTableForEventType:(Class)eventType {
-    NSString *key = [self keyFromEventType:eventType];
-    NSMutableSet *ht = self.subscriptions[key];
+    NSString *key = TPKeyFromEventType(eventType);
+    NSMutableSet *ht = self.subscriptionsByEventType[key];
     if (!ht) {
         ht = [[NSMutableSet alloc] initWithCapacity:1];
-        self.subscriptions[key] = ht;
+        self.subscriptionsByEventType[key] = ht;
     }
     return ht;
 }
 
-- (NSArray<id<TPEventSubscription>> *)subscriptionForEventType:(Class)eventType {
+- (NSMutableSet<id<TPEventSubscription>> *)hashTableForSubscriberID:(NSString *)subscriberID {
+    NSString *key = subscriberID;
+    NSMutableSet *ht = self.subscriptionsBySubscriber[key];
+    if (!ht) {
+        ht = [[NSMutableSet alloc] initWithCapacity:1];
+        self.subscriptionsBySubscriber[key] = ht;
+    }
+    return ht;
+}
+
+- (NSArray<id<TPEventSubscription>> *)subscriptionsForEventType:(Class)eventType {
     return [self hashTableForEventType:eventType].allObjects;
 }
 
-- (void)_removeSubscription:(id<TPEventSubscription>)subscription {
-    NSMutableSet *ht = [self hashTableForEventType:subscription.eventType];
-    if ([ht containsObject:subscription]) {
-        [ht removeObject:subscription];
+- (NSArray<id<TPEventSubscription>> *)subscriptionsForSubscriberID:(NSString *)subscriberID {
+    return [self hashTableForSubscriberID:subscriberID].allObjects;
+}
+
+- (void)_removeSubscription:(id<TPEventSubscription>)subscription subscriberID:(NSString *)subscriberID {
+    NSMutableSet *hashTableForEventType = [self hashTableForEventType:subscription.eventType];
+    if ([hashTableForEventType containsObject:subscription]) {
+        [hashTableForEventType removeObject:subscription];
+        
+        if (subscriberID) {
+            NSMutableSet *hashTableForSubscriber = [self hashTableForSubscriberID:subscriberID];
+            [hashTableForSubscriber removeObject:subscription];
+        }
     }
 }
 
-- (void)_addSubscription:(id<TPEventSubscription>)subscription {
-    NSMutableSet *ht = [self hashTableForEventType:subscription.eventType];
-    if (![ht containsObject:subscription]) {
-        [ht addObject:subscription];
+- (void)_addSubscription:(id<TPEventSubscription>)subscription subscriberID:(NSString *)subscriberID {
+    NSMutableSet *hashTableForEventType = [self hashTableForEventType:subscription.eventType];
+    if (![hashTableForEventType containsObject:subscription]) {
+        [hashTableForEventType addObject:subscription];
+        
+        if (subscriberID) {
+            NSMutableSet *hashTableForSubscriber = [self hashTableForSubscriberID:subscriberID];
+            [hashTableForSubscriber addObject:subscription];
+        }
     }
 }
 
-- (void)addSubscription:(id<TPEventSubscription>)subscription {
+- (void)addSubscription:(id<TPEventSubscription>)subscription subscriberID:(NSString *)subscriberID {
     [self.lock lock];
-    [self _addSubscription:subscription];
+    [self _addSubscription:subscription subscriberID:subscriberID];
     [self.lock unlock];
 }
 
-- (void)removeSubscription:(id<TPEventSubscription>)subscription {
+- (void)removeSubscription:(id<TPEventSubscription>)subscription subscriberID:(NSString *)subscriberID {
     [self.lock lock];
-    [self _removeSubscription:subscription];
+    [self _removeSubscription:subscription subscriberID:subscriberID];
     [self.lock unlock];
 }
 

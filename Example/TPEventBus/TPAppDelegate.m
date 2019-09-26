@@ -22,7 +22,7 @@
     [[TPEventBus sharedBus] registerEventType:TPMediaLikedChangedEvent.class subscriber:self selector:@selector(onMediaLikedChangedEvent:)];
     [[TPEventBusSubscribeEventType(TPMediaLikedChangedEvent).onQueue([NSOperationQueue new]).forObject(nil) onEvent:^(TPMediaLikedChangedEvent * _Nonnull event, id  _Nullable object) {
         NSLog(@"Block Type >>> liked: %@, object: %@, thread: %@", event.liked, object, [NSThread currentThread]);
-    }] disposedByObject:self];
+    }] disposedByBag:self.tp_eventTokenBag];
     
 //    [[TPEventBus sharedBus] unregisterObserver:self];
 //    [[TPEventBus sharedBus] unregisterEventType:TPTestEvent.class observer:self object:nil];
