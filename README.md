@@ -14,7 +14,7 @@ Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
 
 1. Define events:
 
-    ```Swift
+    ```swift
     class TPCountEvent: NSObject, TPEvent {
     	var count: Int
     
@@ -28,7 +28,7 @@ Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
   
     Subscribers implement event handling methods that will be called when an event is received.
     
-    ```Swift
+    ```swift
     @objc func onCountEvent(event: TPCountEvent, object: Any?) {
     	// do something
     }
@@ -37,10 +37,8 @@ Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
     
     Notice: **When the subscriber is released, it will be automatically unregistered.**
 
-   ```Swift
+   ```swift
    // Register
-   ```
-
 	TPEventBus<TPCountEvent>.shared.register(eventType: TPCountEvent.self, subscriber: self, selector: #selector(onCountEvent(event:object:)))
 	
 	// Unregister
@@ -49,10 +47,7 @@ Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
 
 3. Post events:
 
-   ```Swift
-   
-   ```
-
+   ```swift
 	let event = TPCountEvent.init(count: count)
 	TPEventBus.shared.post(event: event, object: self)
 	```
@@ -60,7 +55,7 @@ Source of the picture: [EventBus](https://github.com/greenrobot/EventBus)
 ## Convenience
 
 
-```Swift
+```swift
 TPEventBus<TPCountEvent>.shared.subscribe(eventType: TPCountEvent.self).onQueue(OperationQueue.main).onEvent { [weak self] (event, object) in
     guard let self = self else {
         return
