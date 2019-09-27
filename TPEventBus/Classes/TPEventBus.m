@@ -178,18 +178,8 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
     (self.objectID == other.objectID || [self.objectID isEqual:other.objectID]) &&
     (self.queue == other.queue || [self.queue isEqual:other.queue]);
 }
-    
-- (void)invokeWithEvent:(id<TPEvent>)event object:(nullable id)object {
-    if (self.object) {
-        if (self.object == object) {
-            [self _invokeWithEvent:event object:object];
-        }
-    } else {
-        [self _invokeWithEvent:event object:object];
-    }
-}
 
-- (void)_invokeWithEvent:(id<TPEvent>)event object:(nullable id)object {
+- (void)invokeWithEvent:(id<TPEvent>)event object:(nullable id)object {
     id subscriber = self.subscriber;
     SEL selector = self.selector;
     NSOperationQueue *queue = self.queue;
@@ -284,18 +274,8 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
     (self.queue == other.queue || [self.queue isEqual:other.queue]) &&
     (self.block == other.block || [self.block isEqual:other.block]);
 }
-    
-- (void)invokeWithEvent:(id<TPEvent>)event object:(id)object {
-    if (self.object) {
-        if (self.object == object) {
-            [self _invokeWithEvent:event object:object];
-        }
-    } else {
-        [self _invokeWithEvent:event object:object];
-    }
-}
 
-- (void)_invokeWithEvent:(id<TPEvent>)event object:(nullable id)object {
+- (void)invokeWithEvent:(id<TPEvent>)event object:(nullable id)object {
     NSOperationQueue *queue = self.queue;
     if (queue) {
         [queue addOperationWithBlock:^{
@@ -462,7 +442,13 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
 - (void)postEvent:(id<TPEvent>)event object:(id)object {
     NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionsForEventType:event.class];
     [subscriptions enumerateObjectsUsingBlock:^(id<TPEventSubscription> _Nonnull subscription, NSUInteger idx, BOOL * _Nonnull stop) {
-        [subscription invokeWithEvent:event object:object];
+        if (subscription.object) {
+            if (subscription.object == object) {
+                [subscription invokeWithEvent:event object:object];
+            }
+        } else {
+            [subscription invokeWithEvent:event object:object];
+        }
     }];
 }
 
