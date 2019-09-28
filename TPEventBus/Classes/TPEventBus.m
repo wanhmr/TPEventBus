@@ -415,7 +415,7 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
 }
 
 - (void)unregisterEventType:(Class)eventType subscriber:(id)subscriber object:(id)object {
-    NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionsForSubscriberID:TPIdentityFromObject(subscriber)];
+    NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionsBySubscriberID:TPIdentityFromObject(subscriber)];
     [subscriptions enumerateObjectsUsingBlock:^(id<TPEventSubscription> _Nonnull subscription, NSUInteger idx, BOOL * _Nonnull stop) {
         if (subscription.eventType == eventType) {
             if (object) {
@@ -434,14 +434,14 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
 }
 
 - (void)unregisterSubscriber:(id)subscriber {
-    NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionsForSubscriberID:TPIdentityFromObject(subscriber)];
+    NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionsBySubscriberID:TPIdentityFromObject(subscriber)];
     [subscriptions enumerateObjectsUsingBlock:^(id<TPEventSubscription> _Nonnull subscription, NSUInteger idx, BOOL * _Nonnull stop) {
         [subscription dispose];
     }];
 }
 
 - (void)postEvent:(id<TPEvent>)event object:(id)object {
-    NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionsForEventType:event.class];
+    NSArray<id<TPEventSubscription>> *subscriptions = [self subscriptionsByEventType:event.class];
     [subscriptions enumerateObjectsUsingBlock:^(id<TPEventSubscription> _Nonnull subscription, NSUInteger idx, BOOL * _Nonnull stop) {
         if (subscription.object) {
             if (subscription.object == object) {
@@ -525,11 +525,11 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
     return ht;
 }
 
-- (NSArray<id<TPEventSubscription>> *)subscriptionsForEventType:(Class)eventType {
+- (NSArray<id<TPEventSubscription>> *)subscriptionsByEventType:(Class)eventType {
     return [self hashTableByEventType:eventType].allObjects;
 }
 
-- (NSArray<id<TPEventSubscription>> *)subscriptionsForSubscriberID:(NSString *)subscriberID {
+- (NSArray<id<TPEventSubscription>> *)subscriptionsBySubscriberID:(NSString *)subscriberID {
     return [self hashTableBySubscriberID:subscriberID].allObjects;
 }
 
