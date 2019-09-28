@@ -380,6 +380,8 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
 }
 
 - (TPEventSubscriberMaker<id<TPEvent>> *)subscribeEventType:(Class)eventType {
+    NSParameterAssert([eventType conformsToProtocol:@protocol(TPEvent)]);
+    
     return [[TPEventSubscriberMaker alloc] initWithEventBus:self eventType:eventType];
 }
 
@@ -396,7 +398,6 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
                     queue:(NSOperationQueue *)queue {
     NSParameterAssert([eventType conformsToProtocol:@protocol(TPEvent)]);
     NSParameterAssert(subscriber);
-    NSParameterAssert(selector);
     
     TPTargetActionEventSubscription *subscription =
     [[TPTargetActionEventSubscription alloc] initWithEventType:eventType
@@ -464,7 +465,7 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
 
 #pragma mark - Private
 
-- (NSMutableSet<id<TPEventSubscription>> *)hashTableForEventType:(Class)eventType {
+- (NSMutableSet<id<TPEventSubscription>> *)_hashTableByEventType:(Class)eventType {
     NSString *key = TPKeyFromEventType(eventType);
     NSMutableSet *ht = self.subscriptionsByEventType[key];
     if (!ht) {
@@ -474,7 +475,7 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
     return ht;
 }
 
-- (NSMutableSet<id<TPEventSubscription>> *)hashTableForSubscriberID:(NSString *)subscriberID {
+- (NSMutableSet<id<TPEventSubscription>> *)_hashTableBySubscriberID:(NSString *)subscriberID {
     NSString *key = subscriberID;
     NSMutableSet *ht = self.subscriptionsBySubscriber[key];
     if (!ht) {
@@ -484,36 +485,52 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
     return ht;
 }
 
-- (NSArray<id<TPEventSubscription>> *)subscriptionsForEventType:(Class)eventType {
-    return [self hashTableForEventType:eventType].allObjects;
-}
-
-- (NSArray<id<TPEventSubscription>> *)subscriptionsForSubscriberID:(NSString *)subscriberID {
-    return [self hashTableForSubscriberID:subscriberID].allObjects;
-}
-
 - (void)_removeSubscription:(id<TPEventSubscription>)subscription subscriberID:(NSString *)subscriberID {
-    NSMutableSet *hashTableForEventType = [self hashTableForEventType:subscription.eventType];
-    if ([hashTableForEventType containsObject:subscription]) {
-        [hashTableForEventType removeObject:subscription];
+    NSMutableSet *hashTableByEventType = [self _hashTableByEventType:subscription.eventType];
+    if ([hashTableByEventType containsObject:subscription]) {
+        [hashTableByEventType removeObject:subscription];
         
         if (subscriberID) {
-            NSMutableSet *hashTableForSubscriber = [self hashTableForSubscriberID:subscriberID];
-            [hashTableForSubscriber removeObject:subscription];
+            NSMutableSet *hashTableBySubscriber = [self _hashTableBySubscriberID:subscriberID];
+            [hashTableBySubscriber removeObject:subscription];
         }
     }
 }
 
 - (void)_addSubscription:(id<TPEventSubscription>)subscription subscriberID:(NSString *)subscriberID {
-    NSMutableSet *hashTableForEventType = [self hashTableForEventType:subscription.eventType];
-    if (![hashTableForEventType containsObject:subscription]) {
-        [hashTableForEventType addObject:subscription];
+    NSMutableSet *hashTableByEventType = [self _hashTableByEventType:subscription.eventType];
+    if (![hashTableByEventType containsObject:subscription]) {
+        [hashTableByEventType addObject:subscription];
         
         if (subscriberID) {
-            NSMutableSet *hashTableForSubscriber = [self hashTableForSubscriberID:subscriberID];
-            [hashTableForSubscriber addObject:subscription];
+            NSMutableSet *hashTableBySubscriber = [self _hashTableBySubscriberID:subscriberID];
+            [hashTableBySubscriber addObject:subscription];
         }
     }
+}
+
+- (NSMutableSet<id<TPEventSubscription>> *)hashTableByEventType:(Class)eventType {
+    NSMutableSet *ht = nil;
+    [self.lock lock];
+    ht = [self _hashTableByEventType:eventType];
+    [self.lock unlock];
+    return ht;
+}
+
+- (NSMutableSet<id<TPEventSubscription>> *)hashTableBySubscriberID:(NSString *)subscriberID {
+    NSMutableSet *ht = nil;
+    [self.lock lock];
+    ht = [self _hashTableBySubscriberID:subscriberID];
+    [self.lock unlock];
+    return ht;
+}
+
+- (NSArray<id<TPEventSubscription>> *)subscriptionsForEventType:(Class)eventType {
+    return [self hashTableByEventType:eventType].allObjects;
+}
+
+- (NSArray<id<TPEventSubscription>> *)subscriptionsForSubscriberID:(NSString *)subscriberID {
+    return [self hashTableBySubscriberID:subscriberID].allObjects;
 }
 
 - (void)addSubscription:(id<TPEventSubscription>)subscription subscriberID:(NSString *)subscriberID {
