@@ -341,7 +341,11 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
 
 - (id<TPEventToken>)onEvent:(TPEventSubscriberBlock)block {
     TPAnonymousEventSubscription *subscription =
-    [[TPAnonymousEventSubscription alloc] initWithEventType:self.eventType block:block object:self.object queue:self.queue delegate:self.eventBus];
+    [[TPAnonymousEventSubscription alloc] initWithEventType:self.eventType
+                                                      block:block
+                                                     object:self.object
+                                                      queue:self.queue
+                                                   delegate:self.eventBus];
     [self.eventBus addSubscription:subscription subscriberID:nil];
     return subscription;
 }
@@ -400,11 +404,11 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
     
     TPTargetActionEventSubscription *subscription =
     [[TPTargetActionEventSubscription alloc] initWithEventType:eventType
-                                                subscriber:subscriber
-                                                  selector:selector
-                                                    object:object
-                                                     queue:queue
-                                                  delegate:self];
+                                                    subscriber:subscriber
+                                                      selector:selector
+                                                        object:object
+                                                         queue:queue
+                                                      delegate:self];
     [self addSubscription:subscription subscriberID:subscription.subscriberID];
     [[subscriber tp_eventTokenBag] addToken:subscription];
 }
