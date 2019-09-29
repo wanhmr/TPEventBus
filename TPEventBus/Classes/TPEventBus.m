@@ -328,8 +328,7 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
 
 - (TPEventSubscriberMaker<id<TPEvent>> * (^)(NSOperationQueue *))onQueue {
     return ^ TPEventSubscriberMaker * (NSOperationQueue *queue) {
-        self.queue = queue;
-        return self;
+        return [self onQueue:queue];
     };
 }
 
