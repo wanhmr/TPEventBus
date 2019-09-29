@@ -215,16 +215,15 @@ static inline NSString *TPKeyFromEventType(Class eventType) {
 @interface TPAnonymousEventSubscription : NSObject <TPEventSubscription>
 
 @property (nonatomic, strong, readonly) Class eventType;
-@property (nullable, nonatomic, strong) NSOperationQueue *queue;
-@property (nullable, nonatomic, weak) id object;
-@property (nonatomic, copy) TPEventSubscriberBlock block;
-@property (nullable, nonatomic, weak) TPEventTokenBag *disposableBag;
+@property (nullable, nonatomic, strong, readonly) NSOperationQueue *queue;
+@property (nullable, nonatomic, weak, readonly) id object;
+@property (nonatomic, copy, readonly) TPEventSubscriberBlock block;
 
 @property (nonatomic, weak, readonly) id<TPEventSubscriptionDelegate> delegate;
 
 #pragma mark - Hash
 @property (nonatomic, strong, readonly) NSString *eventTypeID;
-@property (nullable, nonatomic, strong) NSString *objectID;
+@property (nullable, nonatomic, strong, readonly) NSString *objectID;
 
 @end
 
